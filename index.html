@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hustle &amp; Shine Detailing Co. | Mobile Detailing — Boise &amp; Treasure Valley</title>
+<meta name="description" content="Mobile car, truck, and fleet detailing across Boise, Meridian, Eagle, Star, Nampa, and Caldwell. Book online, pay online. Call or text (208) 977-1200.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230B0B0C'/%3E%3Ctext x='50' y='70' font-family='Arial Black,sans-serif' font-weight='900' font-size='58' fill='%23E0231F' text-anchor='middle'%3EH%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Tokens: red / black / orange ---------- */
+  :root{
+    --black:#0B0B0C;
+    --panel:#161616;
+    --panel-2:#1F1F1F;
+    --white:#F4F3F0;
+    --red:#E0231F;
+    --red-dark:#900F0C;
+    --red-glow:#FF4B45;
+    --orange:#FF7A00;
+    --orange-glow:#FFA23D;
+    --steel:#8F8C88;
+    --line: rgba(244,243,240,0.12);
+    --space-1: 8px;
+    --space-2: 16px;
+    --space-3: 24px;
+    --space-4: 40px;
+    --space-5: 64px;
+    --space-6: 96px;
+    --max: 1120px;
+    --chip:10px;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; }
+  img,svg{ display:block; max-width:100%; }
+  a{ color:inherit; text-decoration:none; }
+  ul{ list-style:none; margin:0; padding:0; }
+  h1,h2,h3,p{ margin:0; }
+  button{ font:inherit; }
+
+  body{
+    background:var(--black);
+    color:var(--white);
+    font-family:'Barlow', system-ui, sans-serif;
+    font-size:16px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .display{
+    font-family:'Anton', sans-serif;
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    line-height:0.92;
+    font-weight:400;
+  }
+  .mono{ font-family:'Space Mono', monospace; }
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--orange);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:700;
+  }
+  .eyebrow::before{ content:""; width:22px; height:2px; background:var(--red); display:inline-block; }
+  .wrap{ max-width:var(--max); margin:0 auto; padding:0 var(--space-3); }
+  .skip-link{ position:absolute; left:-9999px; top:0; background:var(--red); color:var(--white); padding:10px 16px; z-index:200; }
+  .skip-link:focus{ left:0; }
+  a:focus-visible, button:focus-visible{ outline:2px solid var(--orange); outline-offset:3px; }
+
+  /* Hazard bar */
+  .hazard{
+    height:8px;
+    background:repeating-linear-gradient(-45deg, var(--black) 0 12px, var(--orange) 12px 24px);
+  }
+
+  /* Faint diagonal texture used behind hero/footer */
+  .grit{ background-image:repeating-linear-gradient(45deg, rgba(244,243,240,0.02) 0px, rgba(244,243,240,0.02) 1px, transparent 1px, transparent 9px); }
+
+  /* ---------- Buttons: chamfered corners ---------- */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:14px 26px;
+    font-weight:700;
+    font-size:14.5px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    border:1px solid transparent;
+    cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    white-space:nowrap;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+  .btn:hover{ transform:translateY(-1px); filter:brightness(1.08); }
+  .btn-primary{ background:var(--red); color:var(--white); }
+  .btn-primary:hover{ box-shadow:0 10px 26px rgba(224,35,31,.4); }
+  .btn-ghost{ background:transparent; border-color:rgba(244,243,240,.3); color:var(--white); }
+  .btn-ghost:hover{ border-color:var(--orange); color:var(--orange); }
+  .btn-sm{ padding:9px 16px; font-size:12.5px; clip-path: polygon(7px 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%, 0 7px); }
+  .btn-pay{ background:var(--orange); color:var(--black); font-family:'Space Mono',monospace; font-weight:700; }
+  .btn-pay:hover{ box-shadow:0 10px 22px rgba(255,122,0,.35); }
+  .btn-block{ width:100%; }
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky; top:0; z-index:100;
+    background:rgba(11,11,12,0.88);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+    transition:box-shadow .2s ease;
+  }
+  header.scrolled{ box-shadow:0 8px 24px rgba(0,0,0,.5); }
+  .nav{ display:flex; align-items:center; justify-content:space-between; padding:16px var(--space-3); max-width:var(--max); margin:0 auto; gap:16px; }
+  .brand{ display:flex; flex-direction:column; line-height:1; }
+  .brand-mark{ font-family:'Anton',sans-serif; font-size:23px; text-transform:uppercase; letter-spacing:.01em; }
+  .brand-mark span{ color:var(--red); }
+  .brand-sub{ font-family:'Space Mono',monospace; font-size:10.5px; letter-spacing:.08em; color:var(--steel); text-transform:uppercase; margin-top:3px; }
+  .nav-actions{ display:flex; align-items:center; gap:10px; }
+  .phone-link{ display:none; font-family:'Space Mono',monospace; font-size:14px; color:var(--white); border:1px solid var(--line); padding:10px 14px; }
+  @media(min-width:640px){ .phone-link{ display:inline-flex; } }
+
+  /* ---------- Hero ---------- */
+  .hero{ padding:var(--space-5) 0 var(--space-4); position:relative; overflow:hidden; }
+  .hero::before{
+    content:"";
+    position:absolute; inset:-20% -10% auto -10%; height:460px;
+    background:radial-gradient(ellipse at top, rgba(224,35,31,0.26), transparent 65%);
+    pointer-events:none;
+  }
+  .hero-inner{ position:relative; }
+  .hero h1{ font-size:clamp(42px, 10vw, 92px); margin-top:18px; max-width:14ch; }
+  .hero h1 em{ font-style:normal; color:var(--orange); }
+  .hero p.lede{ margin-top:var(--space-2); max-width:52ch; font-size:clamp(16px,2.4vw,19px); color:#D8D5D0; }
+  .hero-ctas{ display:flex; flex-wrap:wrap; gap:12px; margin-top:var(--space-3); }
+
+  .fleet-art{ margin-top:var(--space-5); }
+  .fleet-art-row{ display:flex; align-items:flex-end; gap:clamp(10px,3vw,28px); }
+  .veh{ flex:1 1 0; min-width:0; }
+  .veh svg{ width:100%; height:auto; }
+  .veh-label{ font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--steel); margin-top:10px; text-align:center; }
+
+  /* ---------- Trust bar ---------- */
+  .trust{ border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--panel); }
+  .trust-inner{ display:flex; flex-wrap:wrap; gap:var(--space-3); align-items:center; justify-content:space-between; padding:var(--space-2) 0; }
+  .area-chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{ font-family:'Space Mono',monospace; font-size:12px; letter-spacing:.03em; border:1px solid var(--line); color:var(--steel); padding:6px 12px; border-radius:2px; }
+  .hours{ font-family:'Space Mono',monospace; font-size:12.5px; color:var(--steel); }
+  .hours strong{ color:var(--white); font-weight:700; }
+
+  section{ padding:var(--space-5) 0; }
+  .section-head{ max-width:62ch; margin-bottom:var(--space-4); }
+  .section-head h2{ font-size:clamp(32px,5vw,50px); margin-top:14px; }
+  .section-head p{ margin-top:14px; color:var(--steel); font-size:16px; }
+  .reveal{ opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in{ opacity:1; transform:none; }
+
+  /* ---------- Pricing ---------- */
+  .pkg-grid{ display:grid; grid-template-columns:1fr; gap:var(--space-3); }
+  .pkg-card{ background:var(--panel); border:1px solid var(--line); border-top:3px solid var(--red); padding:var(--space-3); }
+  .pkg-card h3{ font-family:'Anton',sans-serif; font-size:27px; text-transform:uppercase; letter-spacing:.01em; }
+  .pkg-card > p{ color:var(--steel); margin-top:8px; font-size:14.5px; max-width:48ch; }
+  .tier-list{ margin-top:var(--space-2); display:flex; flex-direction:column; gap:1px; background:var(--line); }
+  .tier-row{ background:var(--panel-2); display:grid; grid-template-columns:1fr auto auto; align-items:center; gap:14px; padding:14px 16px; }
+  .tier-name{ font-size:14.5px; }
+  .tier-price{ font-family:'Space Mono',monospace; font-weight:700; font-size:16px; color:var(--orange-glow); }
+  @media(max-width:420px){
+    .tier-row{ grid-template-columns:1fr auto; row-gap:10px; }
+    .tier-row .btn-pay{ grid-column:1 / -1; }
+  }
+  .pkg-card .btn-book{ margin-top:var(--space-2); }
+  .note-line{ font-size:13.5px; color:var(--steel); margin-top:var(--space-2); }
+
+  @media(min-width:860px){ .pkg-grid{ grid-template-columns:repeat(3,1fr); } }
+
+  /* ---------- Add-ons ---------- */
+  .addon-grid{ display:grid; grid-template-columns:1fr; gap:var(--space-2); }
+  @media(min-width:720px){ .addon-grid{ grid-template-columns:repeat(3,1fr); } }
+  .addon-card{ border:1px solid var(--line); padding:var(--space-3); background:linear-gradient(180deg, rgba(244,243,240,0.03), transparent); }
+  .addon-card h3{ font-family:'Anton',sans-serif; font-size:22px; text-transform:uppercase; }
+  .addon-card p{ color:var(--steel); font-size:14.5px; margin-top:8px; }
+  .addon-card .quote-tag{ display:inline-block; margin-top:14px; font-family:'Space Mono',monospace; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--orange-glow); border:1px solid rgba(255,122,0,.4); padding:5px 10px; }
+  .addon-card .btn{ margin-top:16px; }
+
+  /* ---------- Fleet banner ---------- */
+  .fleet-banner{
+    border:1px solid var(--line);
+    border-left:4px solid var(--orange);
+    padding:var(--space-4);
+    background:linear-gradient(135deg, rgba(224,35,31,0.16), rgba(255,122,0,0.06));
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--space-3);
+  }
+  .fleet-banner h2{ font-family:'Anton',sans-serif; font-size:clamp(28px,4vw,40px); text-transform:uppercase; max-width:18ch; }
+  .fleet-banner p{ color:#D8D5D0; margin-top:10px; max-width:48ch; font-size:15px; }
+
+  /* ---------- How it works ---------- */
+  .steps{ display:grid; grid-template-columns:1fr; gap:var(--space-3); }
+  @media(min-width:760px){ .steps{ grid-template-columns:repeat(3,1fr); } }
+  .step{ position:relative; padding-top:8px; border-top:2px solid var(--line); }
+  .step-num{ font-family:'Anton',sans-serif; font-size:46px; color:var(--red); line-height:1; display:block; margin-top:14px; }
+  .step h3{ font-family:'Anton',sans-serif; font-size:23px; text-transform:uppercase; margin-top:8px; }
+  .step p{ color:var(--steel); font-size:14.5px; margin-top:8px; max-width:36ch; }
+
+  /* ---------- Footer ---------- */
+  footer{ border-top:1px solid var(--line); padding:var(--space-4) 0 0; }
+  .foot-grid{ display:grid; grid-template-columns:1fr; gap:var(--space-3); }
+  @media(min-width:720px){ .foot-grid{ grid-template-columns:1.3fr 1fr 1fr; } }
+  footer h4{ font-family:'Space Mono',monospace; font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--steel); margin-bottom:12px; }
+  footer .foot-contact a{ display:block; font-size:15px; margin-bottom:6px; }
+  footer .foot-areas li{ font-size:14.5px; color:#D8D5D0; margin-bottom:4px; }
+  .foot-bottom{ margin-top:var(--space-4); padding:var(--space-2) 0; border-top:1px solid var(--line); font-size:12.5px; color:var(--steel); }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .reveal{ opacity:1; transform:none; transition:none; }
+    .btn:hover{ transform:none; }
+  }
+</style>
+</head>
+<body>
+<div class="hazard" aria-hidden="true"></div>
+<a class="skip-link" href="#pricing">Skip to pricing</a>
+
+<header id="top">
+  <div class="nav">
+    <div class="brand">
+      <span class="brand-mark">HUSTLE <span>&amp;</span> SHINE</span>
+      <span class="brand-sub">Mobile Detailing · Treasure Valley</span>
+    </div>
+    <div class="nav-actions">
+      <a class="phone-link" href="tel:+12089771200">(208) 977-1200</a>
+      <a class="btn btn-primary btn-sm" href="https://calendly.com/mrbaldwin-hustlenshine" target="_blank" rel="noopener">Book Now</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ================= HERO ================= -->
+  <section class="hero grit">
+    <div class="wrap hero-inner">
+      <span class="eyebrow">Mobile Detailing · Boise &amp; The Treasure Valley</span>
+      <h1 class="display">Showroom shine.<br><em>Zero shop time.</em></h1>
+      <p class="lede">Full-service detailing for cars, trucks, and everything bigger. We bring the water, the gear, and the muscle straight to your driveway across Boise, Meridian, Eagle, Star, Nampa, and Caldwell.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="https://calendly.com/mrbaldwin-hustlenshine" target="_blank" rel="noopener">Book Your Detail</a>
+        <a class="btn btn-ghost" href="tel:+12089771200">Call or Text (208) 977-1200</a>
+      </div>
+
+      <div class="fleet-art" aria-hidden="true">
+        <div class="fleet-art-row">
+          <div class="veh">
+            <svg viewBox="0 0 200 120">
+              <defs>
+                <linearGradient id="sweepSedan" x1="-40%" y1="0%" x2="60%" y2="100%">
+                  <stop offset="0%" stop-color="#1F1F1F"/>
+                  <stop offset="44%" stop-color="#1F1F1F"/>
+                  <stop offset="50%" stop-color="#FFA23D"/>
+                  <stop offset="56%" stop-color="#1F1F1F"/>
+                  <stop offset="100%" stop-color="#1F1F1F"/>
+                  <animate attributeName="x1" values="-40%;160%" dur="3.2s" begin="0s" repeatCount="indefinite"/>
+                  <animate attributeName="x2" values="60%;260%" dur="3.2s" begin="0s" repeatCount="indefinite"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="66" x2="20" y2="63" stroke="#E0231F" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+              <line x1="0" y1="78" x2="16" y2="76" stroke="#FF7A00" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+              <circle cx="52" cy="98" r="15" fill="#0B0B0C" stroke="#3A3A3A" stroke-width="3"/>
+              <circle cx="150" cy="98" r="15" fill="#0B0B0C" stroke="#3A3A3A" stroke-width="3"/>
+              <path d="M8,92 L8,72 Q8,64 18,63 L48,58 L70,34 Q76,28 86,28 L128,28 Q138,28 143,36 L156,60 L184,66 Q192,68 192,78 L192,92 Z" fill="url(#sweepSedan)" stroke="#3A3A3A" stroke-width="2"/>
+            </svg>
+            <div class="veh-label">Sedan / Coupe</div>
+          </div>
+          <div class="veh" style="flex:1.2 1 0;">
+            <svg viewBox="0 0 200 120">
+              <defs>
+                <linearGradient id="sweepSuv" x1="-40%" y1="0%" x2="60%" y2="100%">
+                  <stop offset="0%" stop-color="#1F1F1F"/>
+                  <stop offset="44%" stop-color="#1F1F1F"/>
+                  <stop offset="50%" stop-color="#FFA23D"/>
+                  <stop offset="56%" stop-color="#1F1F1F"/>
+                  <stop offset="100%" stop-color="#1F1F1F"/>
+                  <animate attributeName="x1" values="-40%;160%" dur="3.2s" begin="0.35s" repeatCount="indefinite"/>
+                  <animate attributeName="x2" values="60%;260%" dur="3.2s" begin="0.35s" repeatCount="indefinite"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="60" x2="22" y2="57" stroke="#E0231F" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+              <line x1="0" y1="74" x2="18" y2="72" stroke="#FF7A00" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+              <circle cx="48" cy="100" r="17" fill="#0B0B0C" stroke="#3A3A3A" stroke-width="3"/>
+              <circle cx="152" cy="100" r="17" fill="#0B0B0C" stroke="#3A3A3A" stroke-width="3"/>
+              <polygon points="8,100 8,58 30,58 30,20 118,20 118,48 192,48 192,100" fill="url(#sweepSuv)" stroke="#3A3A3A" stroke-width="2"/>
+            </svg>
+            <div class="veh-label">SUV / Truck</div>
+          </div>
+          <div class="veh" style="flex:1.5 1 0;">
+            <svg viewBox="0 0 200 120">
+              <defs>
+                <linearGradient id="sweepBig" x1="-40%" y1="0%" x2="60%" y2="100%">
+                  <stop offset="0%" stop-color="#1F1F1F"/>
+                  <stop offset="44%" stop-color="#1F1F1F"/>
+                  <stop offset="50%" stop-color="#FFA23D"/>
+                  <stop offset="56%" stop-color="#1F1F1F"/>
+                  <stop offset="100%" stop-color="#1F1F1F"/>
+                  <animate attributeName="x1" values="-40%;160%" dur="3.2s" begin="0.7s" repeatCount="indefinite"/>
+                  <animate attributeName="x2" values="60%;260%" dur="3.2s" begin="0.7s" repeatCount="indefinite"/>
+                </linearGradient>
+              </defs>
+              <line x1="0" y1="52" x2="22" y2="49" stroke="#E0231F" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+              <line x1="0" y1="66" x2="18" y2="64" stroke="#FF7A00" stroke-width="3" stroke-linecap="round" opacity=".4"/>
+              <circle cx="44" cy="102" r="16" fill="#0B0B0C" stroke="#3A3A3A" stroke-width="3"/>
+              <circle cx="100" cy="102" r="16" fill="#0B0B0C" stroke="#3A3A3A" stroke-width="3"/>
+              <circle cx="156" cy="102" r="16" fill="#0B0B0C" stroke="#3A3A3A" stroke-width="3"/>
+              <rect x="8" y="24" width="184" height="66" fill="url(#sweepBig)" stroke="#3A3A3A" stroke-width="2"/>
+              <rect x="22" y="36" width="22" height="18" fill="#0B0B0C" opacity=".55"/>
+              <rect x="52" y="36" width="22" height="18" fill="#0B0B0C" opacity=".55"/>
+              <rect x="82" y="36" width="22" height="18" fill="#0B0B0C" opacity=".55"/>
+            </svg>
+            <div class="veh-label">Large / Oversized</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= TRUST BAR ================= -->
+  <div class="trust">
+    <div class="wrap trust-inner">
+      <div class="area-chips">
+        <span class="chip">Boise</span>
+        <span class="chip">Meridian</span>
+        <span class="chip">Eagle</span>
+        <span class="chip">Star</span>
+        <span class="chip">Nampa</span>
+        <span class="chip">Caldwell</span>
+      </div>
+      <div class="hours"><strong>Mon–Sat 8am–6pm</strong> · Sunday by appointment</div>
+    </div>
+  </div>
+
+  <!-- ================= PRICING ================= -->
+  <section id="pricing">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Services &amp; Pricing</span>
+        <h2 class="display">Three packages.<br>Three vehicle sizes.</h2>
+        <p>Pricing depends on package and vehicle size. Large, oversized, or heavily soiled vehicles may run above the listed starting price — we'll always confirm before we start.</p>
+      </div>
+
+      <div class="pkg-grid">
+        <div class="pkg-card reveal">
+          <h3>Exterior Wash &amp; Gloss</h3>
+          <p>Hand wash, wheel &amp; tire cleaning, gloss-enhancing sealant, exterior glass, tire shine.</p>
+          <div class="tier-list">
+            <div class="tier-row">
+              <span class="tier-name">Sedan / Coupe</span>
+              <span class="tier-price">$100</span>
+              <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/5kQ9AT0EZ4Ftfgq2NN0co02" target="_blank" rel="noopener">Pay &amp; Book</a>
+            </div>
+            <div class="tier-row">
+              <span class="tier-name">SUV / Truck</span>
+              <span class="tier-price">$180</span>
+              <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/28E9AT2N79ZNfgq7430co03" target="_blank" rel="noopener">Pay &amp; Book</a>
+            </div>
+            <div class="tier-row">
+              <span class="tier-name">Large / Oversized</span>
+              <span class="tier-price">$210+</span>
+              <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/aFafZhgDX1thecm8870co04" target="_blank" rel="noopener">Pay &amp; Book</a>
+            </div>
+          </div>
+          <a class="btn btn-ghost btn-sm btn-block btn-book" href="https://calendly.com/mrbaldwin-hustlenshine" target="_blank" rel="noopener">Just book a time →</a>
+        </div>
+
+        <div class="pkg-card reveal">
+          <h3>Interior Restoration</h3>
+          <p>Full vacuum, carpet &amp; upholstery shampoo, all surfaces wiped down, interior glass, odor treatment.</p>
+          <div class="tier-list">
+            <div class="tier-row">
+              <span class="tier-name">Sedan / Coupe</span>
+              <span class="tier-price">$140</span>
+              <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/3cI28rdrL4Ft0lw4VV0co05" target="_blank" rel="noopener">Pay &amp; Book</a>
+            </div>
+            <div class="tier-row">
+              <span class="tier-name">SUV / Truck</span>
+              <span class="tier-price">$220</span>
+              <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/14AdR9cnH6NBc4ebkj0co06" target="_blank" rel="noopener">Pay &amp; Book</a>
+            </div>
+            <div class="tier-row">
+              <span class="tier-name">Large / Oversized</span>
+              <span class="tier-price">$260+</span>
+              <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/8x23cv87rb3Rd8i3RR0co07" target="_blank" rel="noopener">Pay &amp; Book</a>
+            </div>
+          </div>
+          <a class="btn btn-ghost btn-sm btn-block btn-book" href="https://calendly.com/mrbaldwin-hustlenshine" target="_blank" rel="noopener">Just book a time →</a>
+        </div>
+
+        <div class="pkg-card reveal">
+          <h3>Signature Full Detail</h3>
+          <p>Exterior Wash &amp; Gloss and Interior Restoration together — our most thorough package.</p>
+          <div class="tier-list">
+            <div class="tier-row">
+              <span class="tier-name">Sedan / Coupe</span>
+              <span class="tier-price">$220</span>
+              <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/dRm6oH2N73Bp4BMewv0co08" target="_blank" rel="noopener">Pay &amp; Book</a>
+            </div>
+            <div class="tier-row">
+              <span class="tier-name">SUV / Truck</span>
+              <span class="tier-price">$340</span>
+              <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/7sY28r3Rb1thc4e8870co09" target="_blank" rel="noopener">Pay &amp; Book</a>
+            </div>
+            <div class="tier-row">
+              <span class="tier-name">Large / Oversized</span>
+              <span class="tier-price">$400+</span>
+              <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/fZueVd87rdbZ4BM1JJ0co0a" target="_blank" rel="noopener">Pay &amp; Book</a>
+            </div>
+          </div>
+          <a class="btn btn-ghost btn-sm btn-block btn-book" href="https://calendly.com/mrbaldwin-hustlenshine" target="_blank" rel="noopener">Just book a time →</a>
+        </div>
+      </div>
+      <p class="note-line">"Pay &amp; Book" charges the listed price now through Stripe — book your appointment time at the link on the confirmation page if you haven't already.</p>
+    </div>
+  </section>
+
+  <!-- ================= ADD-ONS ================= -->
+  <section id="addons">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Specialty Work</span>
+        <h2 class="display">Beyond the standard package.</h2>
+        <p>These depend too much on your vehicle's condition and size to price sight-unseen — call or text and we'll get you a real number.</p>
+      </div>
+      <div class="addon-grid">
+        <div class="addon-card reveal">
+          <h3>Paint Correction</h3>
+          <p>Single-stage or two-stage polishing to remove swirls, light scratches, and oxidation before a coating — or just for a deeper shine.</p>
+          <span class="quote-tag">Custom Quote</span><br>
+          <a class="btn btn-ghost btn-sm" href="sms:+12089771200">Text for a Quote</a>
+        </div>
+        <div class="addon-card reveal">
+          <h3>Ceramic Coating</h3>
+          <p>1-year, 3-year, or 5-year protection tiers. Priced by coating length and vehicle size.</p>
+          <span class="quote-tag">Custom Quote</span><br>
+          <a class="btn btn-ghost btn-sm" href="sms:+12089771200">Text for a Quote</a>
+        </div>
+        <div class="addon-card reveal">
+          <h3>Specialty Vehicles</h3>
+          <p>Boats, RVs, UTVs/ATVs, and motorcycles. Different tools, different process, priced on its own.</p>
+          <span class="quote-tag">Custom Quote</span><br>
+          <a class="btn btn-ghost btn-sm" href="sms:+12089771200">Text for a Quote</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FLEET ================= -->
+  <section id="fleet">
+    <div class="wrap">
+      <div class="fleet-banner reveal">
+        <div>
+          <span class="eyebrow">Fleet &amp; Commercial</span>
+          <h2>Keep your whole fleet looking like it means business.</h2>
+          <p>Semi-trucks, work trucks, vans — recurring service, custom pricing built around your fleet's size and schedule.</p>
+        </div>
+        <a class="btn btn-primary" href="tel:+12089771200">Get Fleet Pricing</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">How It Works</span>
+        <h2 class="display">Three steps. Zero hassle.</h2>
+      </div>
+      <div class="steps">
+        <div class="step reveal">
+          <span class="step-num">01</span>
+          <h3>Choose your package</h3>
+          <p>Pick the service and vehicle size that fits above.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">02</span>
+          <h3>Book your time</h3>
+          <p>Grab a slot on the calendar — we come to you.</p>
+        </div>
+        <div class="step reveal">
+          <span class="step-num">03</span>
+          <h3>Pay online</h3>
+          <p>Secure checkout through Stripe, whenever works for you.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="grit">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <span class="brand-mark display">HUSTLE <span style="color:var(--red)">&amp;</span> SHINE</span>
+        <p style="color:var(--steel); font-size:14px; margin-top:10px; max-width:34ch;">Hustle &amp; Shine Detailing Co. LLC — mobile detailing across the Treasure Valley.</p>
+      </div>
+      <div class="foot-contact">
+        <h4>Contact</h4>
+        <a href="tel:+12089771200">Call (208) 977-1200</a>
+        <a href="sms:+12089771200">Text (208) 977-1200</a>
+        <a href="https://calendly.com/mrbaldwin-hustlenshine" target="_blank" rel="noopener">Book Online</a>
+      </div>
+      <div>
+        <h4>Service Area</h4>
+        <ul class="foot-areas">
+          <li>Boise</li><li>Meridian</li><li>Eagle</li><li>Star</li><li>Nampa</li><li>Caldwell</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">Mon–Sat 8am–6pm · Sunday by appointment</div>
+  </div>
+</footer>
+<div class="hazard" aria-hidden="true"></div>
+
+<script>
+  var header = document.getElementById('top');
+  window.addEventListener('scroll', function(){
+    header.classList.toggle('scrolled', window.scrollY > 8);
+  }, { passive:true });
+
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    document.querySelectorAll('svg').forEach(function(svg){
+      if (svg.pauseAnimations) svg.pauseAnimations();
+    });
+  }
+
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
+</script>
+</body>
+</html>
