@@ -164,6 +164,13 @@
   .reveal{ opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; }
   .reveal.in{ opacity:1; transform:none; }
 
+  /* ---------- Gallery ---------- */
+  .gallery-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:var(--space-2); }
+  @media(min-width:720px){ .gallery-grid{ grid-template-columns:repeat(4,1fr); } }
+  .gallery-item{ margin:0; border-top:3px solid var(--red); background:var(--panel); overflow:hidden; }
+  .gallery-item img{ width:100%; height:220px; object-fit:cover; display:block; filter:saturate(1.05); }
+  .gallery-item figcaption{ font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--steel); padding:10px 12px; }
+
   /* ---------- Pricing ---------- */
   .pkg-grid{ display:grid; grid-template-columns:1fr; gap:var(--space-3); }
   .pkg-card{ background:var(--panel); border:1px solid var(--line); border-top:3px solid var(--red); padding:var(--space-3); }
@@ -344,6 +351,51 @@
     </div>
   </div>
 
+  <!-- ================= GALLERY ================= -->
+  <section id="gallery">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Recent Work</span>
+        <h2 class="display">Real Cars. Real Shine.</h2>
+        <p>No stock photos — this is the actual work, from actual driveways across the Treasure Valley.</p>
+      </div>
+      <div class="gallery-grid">
+        <figure class="gallery-item reveal">
+          <img src="images/gallery-1.jpg" alt="Glossy black Acura hood after an exterior detail" loading="lazy">
+          <figcaption>Exterior Gloss Finish</figcaption>
+        </figure>
+        <figure class="gallery-item reveal">
+          <img src="images/gallery-2.jpg" alt="Detailed black lifted Chevrolet Silverado HD, front view" loading="lazy">
+          <figcaption>SUV / Truck Detail</figcaption>
+        </figure>
+        <figure class="gallery-item reveal">
+          <img src="images/gallery-6.jpg" alt="Sedan covered in thick foam during a pre-wash" loading="lazy">
+          <figcaption>Foam Pre-Wash</figcaption>
+        </figure>
+        <figure class="gallery-item reveal">
+          <img src="images/gallery-7.jpg" alt="Glossy black Acura TSX rear quarter panel after a full detail" loading="lazy">
+          <figcaption>Signature Full Detail</figcaption>
+        </figure>
+        <figure class="gallery-item reveal">
+          <img src="images/gallery-3.jpg" alt="Clean sedan interior and dashboard after interior detailing" loading="lazy">
+          <figcaption>Interior Detail</figcaption>
+        </figure>
+        <figure class="gallery-item reveal">
+          <img src="images/gallery-4.jpg" alt="Clean truck interior and seats after interior detailing" loading="lazy">
+          <figcaption>Interior Detail</figcaption>
+        </figure>
+        <figure class="gallery-item reveal">
+          <img src="images/gallery-5.jpg" alt="Heavily soiled vehicle interior before restoration" loading="lazy">
+          <figcaption>Before: Heavily Soiled Interior</figcaption>
+        </figure>
+        <figure class="gallery-item reveal">
+          <img src="images/gallery-8.jpg" alt="Close-up of glossy black Acura front grille and headlight" loading="lazy">
+          <figcaption>Exterior Gloss Finish</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
   <!-- ================= PRICING ================= -->
   <section id="pricing">
     <div class="wrap">
@@ -374,7 +426,7 @@
               <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/aFafZhgDX1thecm8870co04" target="_blank" rel="noopener">Pay &amp; Book</a>
             </div>
           </div>
-          <a class="btn btn-ghost btn-sm btn-block btn-book" href="https://calendly.com/mrbaldwin-hustlenshine" target="_blank" rel="noopener">Just book a time →</a>
+          <a class="btn btn-ghost btn-sm btn-block btn-book" href="https://calendly.com/mrbaldwin-hustlenshine/exterior-wash-gloss-enhancement" target="_blank" rel="noopener">Just book a time →</a>
         </div>
 
         <div class="pkg-card reveal">
@@ -397,7 +449,7 @@
               <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/8x23cv87rb3Rd8i3RR0co07" target="_blank" rel="noopener">Pay &amp; Book</a>
             </div>
           </div>
-          <a class="btn btn-ghost btn-sm btn-block btn-book" href="https://calendly.com/mrbaldwin-hustlenshine" target="_blank" rel="noopener">Just book a time →</a>
+          <a class="btn btn-ghost btn-sm btn-block btn-book" href="https://calendly.com/mrbaldwin-hustlenshine/complete-interior-restoration" target="_blank" rel="noopener">Just book a time →</a>
         </div>
 
         <div class="pkg-card reveal">
@@ -420,7 +472,7 @@
               <a class="btn btn-pay btn-sm" href="https://buy.stripe.com/fZueVd87rdbZ4BM1JJ0co0a" target="_blank" rel="noopener">Pay &amp; Book</a>
             </div>
           </div>
-          <a class="btn btn-ghost btn-sm btn-block btn-book" href="https://calendly.com/mrbaldwin-hustlenshine" target="_blank" rel="noopener">Just book a time →</a>
+          <a class="btn btn-ghost btn-sm btn-block btn-book" href="https://calendly.com/mrbaldwin-hustlenshine/signature-full-detail-interior-exterior" target="_blank" rel="noopener">Just book a time →</a>
         </div>
       </div>
       <p class="note-line">"Pay &amp; Book" charges the listed price now through Stripe — book your appointment time at the link on the confirmation page if you haven't already.</p>
@@ -439,20 +491,29 @@
         <div class="addon-card reveal">
           <h3>Paint Correction</h3>
           <p>Single-stage or two-stage polishing to remove swirls, light scratches, and oxidation before a coating — or just for a deeper shine.</p>
-          <span class="quote-tag">Custom Quote</span><br>
-          <a class="btn btn-ghost btn-sm" href="sms:+12089771200">Text for a Quote</a>
+          <span class="quote-tag">Custom Quote</span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">
+            <a class="btn btn-ghost btn-sm" href="https://calendly.com/mrbaldwin-hustlenshine/paint-correction-assessment" target="_blank" rel="noopener">Book a Time</a>
+            <a class="btn btn-ghost btn-sm" href="sms:+12089771200">Text Instead</a>
+          </div>
         </div>
         <div class="addon-card reveal">
           <h3>Ceramic Coating</h3>
           <p>1-year, 3-year, or 5-year protection tiers. Priced by coating length and vehicle size.</p>
-          <span class="quote-tag">Custom Quote</span><br>
-          <a class="btn btn-ghost btn-sm" href="sms:+12089771200">Text for a Quote</a>
+          <span class="quote-tag">Custom Quote</span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">
+            <a class="btn btn-ghost btn-sm" href="https://calendly.com/mrbaldwin-hustlenshine/ceramic-coating-consultation" target="_blank" rel="noopener">Book a Time</a>
+            <a class="btn btn-ghost btn-sm" href="sms:+12089771200">Text Instead</a>
+          </div>
         </div>
         <div class="addon-card reveal">
           <h3>Specialty Vehicles</h3>
           <p>Boats, RVs, UTVs/ATVs, and motorcycles. Different tools, different process, priced on its own.</p>
-          <span class="quote-tag">Custom Quote</span><br>
-          <a class="btn btn-ghost btn-sm" href="sms:+12089771200">Text for a Quote</a>
+          <span class="quote-tag">Custom Quote</span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;">
+            <a class="btn btn-ghost btn-sm" href="https://calendly.com/mrbaldwin-hustlenshine/specialty-vehicle-detail-boat-rv-utv-motorcycle" target="_blank" rel="noopener">Book a Time</a>
+            <a class="btn btn-ghost btn-sm" href="sms:+12089771200">Text Instead</a>
+          </div>
         </div>
       </div>
     </div>
@@ -467,7 +528,10 @@
           <h2>Keep your whole fleet looking like it means business.</h2>
           <p>Semi-trucks, work trucks, vans — recurring service, custom pricing built around your fleet's size and schedule.</p>
         </div>
-        <a class="btn btn-primary" href="tel:+12089771200">Get Fleet Pricing</a>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <a class="btn btn-primary" href="https://calendly.com/mrbaldwin-hustlenshine/fleet-account-consultation" target="_blank" rel="noopener">Book Fleet Consultation</a>
+          <a class="btn btn-ghost" href="tel:+12089771200">Call (208) 977-1200</a>
+        </div>
       </div>
     </div>
   </section>
@@ -498,6 +562,16 @@
       </div>
     </div>
   </section>
+
+  <!-- ================= REVIEW ================= -->
+  <section id="review">
+    <div class="wrap" style="text-align:center;">
+      <span class="eyebrow" style="justify-content:center;">Loved Your Detail?</span>
+      <h2 class="display" style="font-size:clamp(26px,4vw,38px); margin-top:10px;">Tell Your Neighbors On Google</h2>
+      <p style="color:var(--steel); margin-top:10px; max-width:48ch; margin-left:auto; margin-right:auto;">A quick review helps other folks in the Treasure Valley find us.</p>
+      <a class="btn btn-primary" href="https://g.page/r/CW3KsrNlg_CgEBM/review" target="_blank" rel="noopener" style="margin-top:20px;">Leave Us a Review</a>
+    </div>
+  </section>
 </main>
 
 <footer class="grit">
@@ -512,6 +586,7 @@
         <a href="tel:+12089771200">Call (208) 977-1200</a>
         <a href="sms:+12089771200">Text (208) 977-1200</a>
         <a href="https://calendly.com/mrbaldwin-hustlenshine" target="_blank" rel="noopener">Book Online</a>
+        <a href="https://g.page/r/CW3KsrNlg_CgEBM/review" target="_blank" rel="noopener">Leave a Google Review</a>
       </div>
       <div>
         <h4>Service Area</h4>
