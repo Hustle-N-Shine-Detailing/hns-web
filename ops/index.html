@@ -13,7 +13,7 @@
     <section class="auth-card">
       <div class="eyebrow">HUSTLE & SHINE</div>
       <h1>Run the whole shop from one place.</h1>
-      <p class="muted">Jobs, booking leads, commercial prospects, customers, vehicles and services — built for detailing work.</p>
+      <p class="muted">Jobs, booking leads, prospects, customers, vehicles and services — built for detailing work.</p>
       <form id="authForm" class="stack">
         <label>Email<input id="email" type="email" autocomplete="email" required value="Mrbaldwin@hustlenshine.pro" /></label>
         <label>Password<input id="password" type="password" autocomplete="current-password" required minlength="8" /></label>
@@ -38,6 +38,7 @@
         <button class="nav-item" data-view="prospects">Prospects</button>
         <button class="nav-item" data-view="jobs">Jobs</button>
         <button class="nav-item" data-view="customers">Customers</button>
+        <button class="nav-item" data-view="garage">Garage</button>
         <button class="nav-item" data-view="services">Services</button>
       </nav>
       <button id="signOut" class="btn ghost">Sign out</button>
@@ -67,10 +68,11 @@
       </section>
 
       <section id="leadsView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Website booking requests</h3></div><div id="leadsList" class="list"></div></div></section>
-      <section id="prospectsView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>Commercial prospects</h3><small>Boise + Treasure Valley businesses you want to turn into recurring accounts.</small></div><button class="btn primary" type="button" onclick="document.getElementById('prospectDialog').showModal()">+ Add prospect</button></div><div id="prospectsList" class="list"></div></div></section>
+      <section id="prospectsView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>Commercial prospects</h3><small>Boise + Treasure Valley businesses you want to turn into recurring accounts.</small></div><button class="btn primary" type="button" id="addProspectInside">+ Add prospect</button></div><div id="prospectsList" class="list"></div></div></section>
       <section id="jobsView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Jobs</h3></div><div id="jobsList" class="list"></div></div></section>
       <section id="customersView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Customers</h3></div><div id="customersList" class="list"></div></div></section>
-      <section id="servicesView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Service menu</h3></div><div id="servicesList" class="list"></div></div></section>
+      <section id="garageView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>Customer garage</h3><small>Every vehicle stays attached to the customer and follows the job history.</small></div><button class="btn primary" type="button" id="newVehicleBtn">+ Add vehicle</button></div><div id="vehiclesList" class="list"></div></div></section>
+      <section id="servicesView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>Service menu</h3><small>Your real packages, base prices and estimated time.</small></div><button class="btn primary" type="button" id="newServiceBtn">+ Add service</button></div><div id="servicesList" class="list"></div></div></section>
     </main>
   </div>
 
@@ -89,17 +91,50 @@
     </form>
   </dialog>
 
+  <dialog id="vehicleDialog">
+    <form id="vehicleForm" class="modal-card">
+      <div class="panel-head"><h3>Add customer vehicle</h3><button class="icon-btn" type="button" data-close>×</button></div>
+      <div class="form-grid">
+        <label class="full">Customer<select name="customer_id" id="vehicleCustomer" required></select></label>
+        <label>Year<input name="year" type="number" min="1900" max="2100" /></label>
+        <label>Make<input name="make" placeholder="Ford" /></label>
+        <label>Model<input name="model" placeholder="F-150" /></label>
+        <label>Color<input name="color" /></label>
+        <label>Plate<input name="plate" /></label>
+        <label>VIN<input name="vin" /></label>
+        <label class="full">Notes<textarea name="notes" rows="3" placeholder="Paint condition, pet hair, aftermarket parts, recurring concerns…"></textarea></label>
+      </div>
+      <button class="btn primary" type="submit">Save vehicle</button>
+    </form>
+  </dialog>
+
   <dialog id="jobDialog">
     <form id="jobForm" class="modal-card">
       <div class="panel-head"><h3>New job</h3><button class="icon-btn" type="button" data-close>×</button></div>
       <div class="form-grid">
         <label class="full">Customer<select name="customer_id" id="jobCustomer" required></select></label>
+        <label class="full">Vehicle<select name="vehicle_id" id="jobVehicle"><option value="">No vehicle selected</option></select></label>
+        <label class="full">Service<select name="service_id" id="jobService"><option value="">No service selected</option></select></label>
         <label>Date & time<input name="scheduled_start" type="datetime-local" required /></label>
         <label>Status<select name="status"><option>scheduled</option><option>confirmed</option><option>in_progress</option><option>completed</option></select></label>
         <label class="full">Address<input name="address" /></label>
         <label class="full">Internal notes<textarea name="internal_notes" rows="3"></textarea></label>
       </div>
       <button class="btn primary" type="submit">Create job</button>
+    </form>
+  </dialog>
+
+  <dialog id="serviceDialog">
+    <form id="serviceForm" class="modal-card">
+      <div class="panel-head"><h3>Add service</h3><button class="icon-btn" type="button" data-close>×</button></div>
+      <div class="form-grid">
+        <label class="full">Service name<input name="name" required placeholder="Full Interior Detail" /></label>
+        <label>Base price<input name="base_price" type="number" min="0" step="0.01" value="0" /></label>
+        <label>Estimated minutes<input name="duration_minutes" type="number" min="1" value="60" /></label>
+        <label class="full">Description<textarea name="description" rows="4"></textarea></label>
+        <label class="checkbox-row"><input name="active" type="checkbox" checked /> Active and available</label>
+      </div>
+      <button class="btn primary" type="submit">Save service</button>
     </form>
   </dialog>
 
