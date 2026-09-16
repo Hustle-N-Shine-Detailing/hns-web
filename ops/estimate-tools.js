@@ -98,5 +98,6 @@
   loadScriptOnce('ops-pricing-tools', './pricing-tools.js');
   loadScriptOnce('ops-direct-job-tools', './direct-job-tools.js');
   loadScriptOnce('ops-lead-finder-tools', './lead-finder-tools.js');
+  loadScriptOnce('ops-prospect-tools', './prospect-tools.js');
   loadScriptOnce('ops-photo-upload-tools', './photo-upload-tools.js');
 })();
