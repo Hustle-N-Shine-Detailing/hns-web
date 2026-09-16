@@ -1,0 +1,39 @@
+name: Ops checks
+
+on:
+  pull_request:
+    paths:
+      - 'ops/**'
+      - '.github/workflows/ops-check.yml'
+  push:
+    branches:
+      - feature/detailer-ops-mvp
+    paths:
+      - 'ops/**'
+      - '.github/workflows/ops-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check Ops JavaScript syntax
+        run: |
+          node --check ops/app.js
+          node --check ops/job-tools.js
+          node --check ops/growth-tools.js
+      - name: Confirm required Ops files
+        run: |
+          test -f ops/index.html
+          test -f ops/app.css
+          test -f ops/app.js
+          test -f ops/job-tools.js
+          test -f ops/growth-tools.js
