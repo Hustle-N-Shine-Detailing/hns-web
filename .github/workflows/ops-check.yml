@@ -7,6 +7,7 @@ on:
       - '.github/workflows/ops-check.yml'
   push:
     branches:
+      - main
       - feature/detailer-ops-mvp
     paths:
       - 'ops/**'
@@ -25,11 +26,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check Ops JavaScript syntax
+      - name: Check every Ops JavaScript file
         run: |
-          node --check ops/app.js
-          node --check ops/job-tools.js
-          node --check ops/growth-tools.js
+          set -euo pipefail
+          for file in ops/*.js; do
+            echo "Checking $file"
+            node --check "$file"
+          done
       - name: Confirm required Ops files
         run: |
           test -f ops/index.html
@@ -37,3 +40,8 @@ jobs:
           test -f ops/app.js
           test -f ops/job-tools.js
           test -f ops/growth-tools.js
+          test -f ops/estimate-tools.js
+          test -f ops/pricing-tools.js
+          test -f ops/direct-job-tools.js
+          test -f ops/runtime-guards.js
+          test -f ops/lead-finder-tools.js
