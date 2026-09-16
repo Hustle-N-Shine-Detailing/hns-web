@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b0b0c" />
+  <title>Hustle & Shine Ops</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+  <div id="authView" class="auth-shell">
+    <section class="auth-card">
+      <div class="eyebrow">HUSTLE & SHINE</div>
+      <h1>Run the whole shop from one place.</h1>
+      <p class="muted">Jobs, leads, customers, vehicles, services and money — built for detailing work.</p>
+      <form id="authForm" class="stack">
+        <label>Email<input id="email" type="email" autocomplete="email" required value="Mrbaldwin@hustlenshine.pro" /></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required minlength="8" /></label>
+        <div class="split">
+          <button class="btn primary" type="submit">Sign in</button>
+          <button class="btn" type="button" id="createAccount">Create owner account</button>
+        </div>
+        <p id="authMessage" class="message"></p>
+      </form>
+    </section>
+  </div>
+
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar">
+      <div>
+        <div class="brand-mark">H&S</div>
+        <div class="brand-copy"><strong>Hustle & Shine</strong><span>Operations</span></div>
+      </div>
+      <nav id="nav">
+        <button class="nav-item active" data-view="dashboard">Dashboard</button>
+        <button class="nav-item" data-view="leads">Booking Leads</button>
+        <button class="nav-item" data-view="jobs">Jobs</button>
+        <button class="nav-item" data-view="customers">Customers</button>
+        <button class="nav-item" data-view="services">Services</button>
+      </nav>
+      <button id="signOut" class="btn ghost">Sign out</button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><div class="eyebrow">OWNER CONSOLE</div><h2 id="pageTitle">Dashboard</h2></div>
+        <div class="top-actions">
+          <button class="btn" id="newCustomerBtn">+ Customer</button>
+          <button class="btn primary" id="newJobBtn">+ Job</button>
+        </div>
+      </header>
+
+      <section id="dashboardView" class="view">
+        <div class="metric-grid">
+          <article class="metric"><span>New leads</span><strong id="metricLeads">0</strong><small>Waiting on you</small></article>
+          <article class="metric"><span>Upcoming jobs</span><strong id="metricJobs">0</strong><small>Scheduled</small></article>
+          <article class="metric"><span>Customers</span><strong id="metricCustomers">0</strong><small>In your book</small></article>
+          <article class="metric"><span>Services</span><strong id="metricServices">0</strong><small>Active menu</small></article>
+        </div>
+        <div class="two-col">
+          <article class="panel"><div class="panel-head"><h3>Next jobs</h3><button class="text-btn" data-jump="jobs">See all</button></div><div id="nextJobs" class="list"></div></article>
+          <article class="panel"><div class="panel-head"><h3>Fresh leads</h3><button class="text-btn" data-jump="leads">See all</button></div><div id="freshLeads" class="list"></div></article>
+        </div>
+      </section>
+
+      <section id="leadsView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Booking requests</h3></div><div id="leadsList" class="list"></div></div></section>
+      <section id="jobsView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Jobs</h3></div><div id="jobsList" class="list"></div></div></section>
+      <section id="customersView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Customers</h3></div><div id="customersList" class="list"></div></div></section>
+      <section id="servicesView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Service menu</h3></div><div id="servicesList" class="list"></div></div></section>
+    </main>
+  </div>
+
+  <dialog id="customerDialog">
+    <form id="customerForm" method="dialog" class="modal-card">
+      <div class="panel-head"><h3>New customer</h3><button class="icon-btn" type="button" data-close>×</button></div>
+      <div class="form-grid">
+        <label>First name<input name="first_name" required /></label>
+        <label>Last name<input name="last_name" /></label>
+        <label>Phone<input name="phone" /></label>
+        <label>Email<input name="email" type="email" /></label>
+        <label class="full">Address<input name="address" /></label>
+        <label class="full">Notes<textarea name="notes" rows="3"></textarea></label>
+      </div>
+      <button class="btn primary" type="submit">Save customer</button>
+    </form>
+  </dialog>
+
+  <dialog id="jobDialog">
+    <form id="jobForm" method="dialog" class="modal-card">
+      <div class="panel-head"><h3>New job</h3><button class="icon-btn" type="button" data-close>×</button></div>
+      <div class="form-grid">
+        <label class="full">Customer<select name="customer_id" id="jobCustomer" required></select></label>
+        <label>Date & time<input name="scheduled_start" type="datetime-local" required /></label>
+        <label>Status<select name="status"><option>scheduled</option><option>confirmed</option><option>in_progress</option><option>completed</option></select></label>
+        <label class="full">Address<input name="address" /></label>
+        <label class="full">Internal notes<textarea name="internal_notes" rows="3"></textarea></label>
+      </div>
+      <button class="btn primary" type="submit">Create job</button>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
