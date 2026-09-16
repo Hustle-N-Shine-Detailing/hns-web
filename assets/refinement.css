@@ -1,0 +1,43 @@
+/* Approved compact black / orange layout. Booking styles remain isolated. */
+@font-face{font-family:BarlowCondensed;src:url('barlow-condensed-800.ttf') format('truetype');font-weight:800;font-style:normal;font-display:swap}
+.display,.brand-main,.service h3,.correction-card h3,.correction-card .num{font-family:BarlowCondensed,Impact,'Arial Narrow',sans-serif;font-weight:800}
+:root{--paper:#fafafa;--orange:#f95708;--max:1240px}
+html{scroll-padding-top:90px}
+body{font-size:16px}
+.utility{display:none}
+.nav{height:84px}
+.brand{gap:7px}.brand-main{font-size:1.65rem}
+.display{line-height:1.02;letter-spacing:-.02em}
+.hero{min-height:475px}.hero .wrap{padding:44px 0}.hero-copy{max-width:660px}
+.hero h1{font-size:clamp(3.4rem,6.5vw,6.3rem);line-height:.98}
+.hero-mini{display:none}.hero-lede{max-width:43ch;line-height:1.6}
+.hero-bg img{object-position:65% 45%}.hero-bg:after{background:linear-gradient(90deg,rgba(7,8,9,.94),rgba(7,8,9,.65) 43%,rgba(7,8,9,.12))}
+.scribble{font-size:1.4rem;bottom:35px}
+.trust-item{padding:20px 16px}.trust-item small,.benefit small{font-size:.875rem}
+.section{padding:40px 0}.section-head{grid-template-columns:1.15fr .85fr;margin-bottom:22px;gap:28px}
+.section-head h2{font-size:clamp(2rem,3.1vw,3rem)}.eyebrow{font-size:.875rem;letter-spacing:.1em}
+.services{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.service{border:1px solid #e5e5e5;box-shadow:0 4px 14px #00000005;border-radius:3px}
+.service-photo{aspect-ratio:1.8}.service-body{padding:18px}.service h3{font-size:1.45rem;line-height:1.2}
+.service p{font-size:1rem;line-height:1.5;min-height:6em}.service-badge{font-size:.75rem;background:none;color:#a83800;padding:0;letter-spacing:.025em}
+button.text-link,button.review-link{background:none;border:0;padding:8px 0;cursor:pointer;text-align:left}
+.text-link{color:#bd3d00}.dark .text-link,.correction .text-link{color:#ff793a}
+.gallery{grid-template-columns:repeat(3,minmax(0,1fr))}.gallery-card{height:240px;min-height:0;border-radius:4px}.gallery-card:first-child{grid-column:auto}
+.gallery-card img{width:100%;height:100%}.gallery-caption{font-size:.875rem;gap:16px}
+.benefits{padding:22px 0}.benefit{padding:14px}.benefit strong{font-size:.95rem}
+.about-grid{min-height:300px;grid-template-columns:.8fr 1.2fr}.about-photo{max-height:340px;min-height:0}.about-copy{padding:32px 40px}.about-copy h2{font-size:2.8rem}.signature{margin-top:16px}
+.correction{padding:0}.correction-wrap{grid-template-columns:1fr 1.05fr 1fr;gap:24px;align-items:center}
+.correction-copy{padding:30px 0}.correction-copy h2{font-size:clamp(2.3rem,3vw,3rem)}.correction-copy p{font-size:1rem;line-height:1.6;color:#c2c7cc}
+.correction-photo{position:relative;aspect-ratio:650/868;overflow:hidden;max-height:490px;width:100%;align-self:stretch}
+.correction-photo img{position:absolute;width:109.08%;max-width:none;height:auto;left:-4.46%;top:-41.94%}
+.correction-cards{grid-template-columns:1fr;gap:10px;padding:24px 0}
+.correction-card{min-height:0;padding:14px 16px;display:grid;grid-template-columns:34px 1fr;gap:0 10px;border-radius:4px}
+.correction-card:nth-child(2){border-top:1px solid #363c41}.correction-card .num{font-size:1.4rem;grid-row:1/4}.correction-card h3{margin:0;font-size:1.3rem}.correction-card p{font-size:.875rem;margin:5px 0;color:#c0c6cb}.correction-card button{grid-column:2}
+.reviews{background:#fff;color:#151719}.reviews>.wrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:32px;align-items:center}.review-head{display:block;margin:0}.review-head h2{font-size:2.6rem}.review-head p{margin:14px 0}.review-head>a{display:inline-block;margin-top:8px}.review-grid{grid-template-columns:1fr}.review-card{border:1px solid #ddd;box-shadow:0 6px 24px #00000006;padding:26px}.review-card p{font-size:1rem;color:#444;line-height:1.65}
+.final-inner{width:min(var(--max),calc(100% - 40px));padding:32px 0}.final-inner h2{font-size:clamp(2.4rem,3.4vw,3.4rem)}
+.footer p,.footer a{font-size:.875rem;overflow-wrap:anywhere}.footer-grid{grid-template-columns:1fr .8fr .8fr 1fr}.footer .brand-main{font-size:1.4rem}
+:focus-visible{outline:3px solid #ff8b50;outline-offset:4px}.request-form input,.request-form textarea{font-size:16px}
+@media(max-width:1050px){.desktop-nav{display:none}.menu{display:block}.nav-actions{margin-left:auto}.services{grid-template-columns:repeat(2,minmax(0,1fr))}.service p{min-height:0}.correction-wrap{grid-template-columns:1fr 1fr}.correction-cards{grid-column:1/-1;grid-template-columns:repeat(3,1fr);padding-top:0}.correction-photo{max-height:none;align-self:center}.trust-grid,.benefit-grid{grid-template-columns:repeat(2,1fr)}.footer-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.nav{height:70px}.hero{min-height:455px}.hero .wrap{padding:40px 0}.hero h1{font-size:clamp(3rem,11vw,4.5rem)}.hero-lede{font-size:1rem;max-width:33ch}.hero-bg:after{background:linear-gradient(90deg,#070809e8,#07080990)}.section{padding:34px 0}.section-head{grid-template-columns:1fr;gap:12px}.section-head h2{font-size:2.2rem}.trust-item{grid-template-columns:24px 1fr;padding:16px 10px;gap:8px}.trust-item strong{font-size:.875rem}.trust-ico{font-size:1.3rem}.trust-item small{font-size:.8rem}.gallery{grid-template-columns:1fr}.gallery-card{height:260px}.gallery-caption{display:block}.gallery-caption span{display:block;margin-top:6px}.about-grid{grid-template-columns:1fr}.about-photo{height:250px;min-height:0}.about-copy{padding:30px 10px}.about-copy h2{font-size:2.4rem}.correction-wrap{grid-template-columns:1fr;gap:0}.correction-copy{padding:0 0 24px}.correction-photo{aspect-ratio:650/868;width:min(100%,390px);justify-self:center}.correction-cards{grid-template-columns:1fr;padding:24px 0 0}.reviews>.wrap{grid-template-columns:1fr;gap:22px}.review-head h2{font-size:2.3rem}.final-inner{width:calc(100% - 28px);gap:20px}.final-cta{min-height:260px}.brand-main{font-size:1.4rem}.brand svg{width:42px}.footer{padding-bottom:100px}.booking-body{padding:14px}.sum-v{overflow-wrap:anywhere}.benefit{grid-template-columns:28px 1fr;padding:14px 8px;gap:8px}}
+@media(max-width:480px){.services{grid-template-columns:1fr}.service-photo{aspect-ratio:1.9}.trust-grid,.benefit-grid{grid-template-columns:1fr 1fr}.trust-item small{font-size:.8rem}.trust-item strong{font-size:.8rem}.benefit strong{font-size:.82rem}.benefit small{font-size:.8rem}.footer-grid{grid-template-columns:1fr}.hero-actions .btn{padding:12px;font-size:.875rem}.hero h1{letter-spacing:-.035em}.app-nav{flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
