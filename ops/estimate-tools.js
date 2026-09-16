@@ -84,4 +84,9 @@
       submitButton.textContent = oldText;
     }
   }, true);
+
+  const pricingScript = document.createElement('script');
+  pricingScript.src = './pricing-tools.js';
+  pricingScript.async = false;
+  document.body.appendChild(pricingScript);
 })();
