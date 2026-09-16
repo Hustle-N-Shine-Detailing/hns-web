@@ -81,14 +81,111 @@
     button.type = 'button'; button.className = className; button.textContent = text; button.addEventListener('click', onClick); return button;
   }
 
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+  async function promoteViaRpc(item) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    try {
+      const { data, error } = await db.rpc('promote_lead_candidate', { p_lead_id: item.id }).abortSignal(controller.signal);
+      if (error) throw error;
+      return data;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function refreshCandidate(item) {
+    const { data, error } = await db.from('lead_candidates')
+      .select('id,status,prospect_id')
+      .eq('id', item.id)
+      .eq('business_id', state.businessId)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  }
+
+  async function promoteDirectly(item) {
+    const prospectPayload = {
+      business_id: state.businessId,
+      company_name: item.company_name,
+      category: item.category || null,
+      contact_name: item.contact_name || null,
+      phone: item.phone || null,
+      email: item.email || null,
+      website: item.website || null,
+      address: item.address || null,
+      city: item.city || null,
+      state: item.state || null,
+      source: 'lead_finder',
+      stage: 'new',
+      notes: item.fit_reason ? `Lead Finder: ${item.fit_reason}` : ''
+    };
+
+    const { data: prospect, error: insertError } = await db.from('prospects')
+      .insert(prospectPayload)
+      .select('id')
+      .single();
+    if (insertError) throw insertError;
+
+    const { error: updateError } = await db.from('lead_candidates')
+      .update({ status: 'saved', prospect_id: prospect.id, updated_at: new Date().toISOString() })
+      .eq('id', item.id)
+      .eq('business_id', state.businessId);
+
+    if (updateError) {
+      await db.from('prospects').delete().eq('id', prospect.id).eq('business_id', state.businessId);
+      throw updateError;
+    }
+
+    return prospect.id;
+  }
+
   async function promote(item, button) {
-    button.disabled = true; button.textContent = 'Adding…';
-    const { error } = await db.rpc('promote_lead_candidate', { p_lead_id: item.id });
-    if (error) { button.disabled = false; button.textContent = 'Add to prospects'; return alert(error.message); }
-    item.status = 'saved';
-    await loadAll();
-    await loadLeadCandidates();
-    showView('prospects');
+    const oldText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Adding…';
+
+    try {
+      let prospectId = null;
+
+      try {
+        prospectId = await promoteViaRpc(item);
+      } catch (rpcError) {
+        console.warn('Lead Finder RPC failed; checking status before fallback.', rpcError);
+        await wait(350);
+        const current = await refreshCandidate(item);
+        if (current?.prospect_id || current?.status === 'saved') {
+          prospectId = current.prospect_id;
+        } else {
+          prospectId = await promoteDirectly(item);
+        }
+      }
+
+      if (!prospectId) {
+        const current = await refreshCandidate(item);
+        if (!current?.prospect_id && current?.status !== 'saved') throw new Error('The prospect was not saved. Please try again.');
+      }
+
+      item.status = 'saved';
+      item.prospect_id = prospectId || item.prospect_id;
+      renderLeadFinder();
+
+      try {
+        await loadAll();
+      } catch (refreshError) {
+        console.error('Prospect saved, but dashboard refresh failed.', refreshError);
+      }
+      showView('prospects');
+    } catch (error) {
+      console.error('Unable to add lead to prospects.', error);
+      alert(error?.message || 'Unable to add this lead to prospects. Please try again.');
+    } finally {
+      if (button.isConnected) {
+        button.disabled = false;
+        button.textContent = oldText;
+      }
+    }
   }
 
   async function dismiss(item, button) {
@@ -129,7 +226,7 @@
   async function loadLeadCandidates() {
     if (!state.businessId) return;
     const { data, error } = await db.from('lead_candidates')
-      .select('id,company_name,category,phone,email,website,address,city,state,fit_reason,status,prospect_id,created_at')
+      .select('id,company_name,category,contact_name,phone,email,website,address,city,state,fit_reason,status,prospect_id,created_at')
       .eq('business_id', state.businessId)
       .order('created_at', { ascending: false })
       .limit(500);
