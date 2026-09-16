@@ -1,0 +1,87 @@
+name: Homepage checks
+
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'assets/site.css'
+      - 'assets/site.js'
+      - 'assets/booking.js'
+      - 'assets/*.jpg'
+      - '.github/workflows/homepage-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/site.js
+          node --check assets/booking.js
+
+      - name: Check required homepage files
+        run: |
+          test -f index.html
+          test -f assets/site.css
+          test -f assets/site.js
+          test -f assets/booking.js
+          test -f assets/chevrolet-detail.jpg
+          test -f assets/acura-detail.jpg
+          test -f assets/console-before.jpg
+          test -f assets/console-after.jpg
+
+      - name: Validate local links, assets, and IDs
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+
+          root = Path('.')
+          html = Path('index.html').read_text(encoding='utf-8')
+
+          class P(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.ids=[]
+                  self.refs=[]
+              def handle_starttag(self, tag, attrs):
+                  d=dict(attrs)
+                  if 'id' in d:
+                      self.ids.append(d['id'])
+                  for key in ('href','src'):
+                      if key in d:
+                          self.refs.append(d[key])
+
+          p=P(); p.feed(html)
+          dupes=sorted({x for x in p.ids if p.ids.count(x)>1})
+          assert not dupes, f'Duplicate IDs: {dupes}'
+
+          ids=set(p.ids)
+          broken_anchors=[]
+          missing_files=[]
+          for ref in p.refs:
+              if ref.startswith('#') and len(ref)>1:
+                  if ref[1:] not in ids:
+                      broken_anchors.append(ref)
+              elif ref.startswith(('http://','https://','tel:','sms:','mailto:','data:','#')):
+                  continue
+              else:
+                  path=ref.split('?',1)[0].split('#',1)[0]
+                  if path and not (root/path).exists():
+                      missing_files.append(path)
+
+          assert not broken_anchors, f'Broken anchors: {broken_anchors}'
+          assert not missing_files, f'Missing local assets: {missing_files}'
+          print('Homepage static validation passed')
+          PY
