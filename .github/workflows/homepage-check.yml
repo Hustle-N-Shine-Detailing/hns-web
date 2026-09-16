@@ -1,6 +1,17 @@
 name: Homepage checks
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'index.html'
+      - 'assets/site.css'
+      - 'assets/site.js'
+      - 'assets/booking.js'
+      - 'assets/*.jpg'
+      - 'assets/*.webp'
+      - '.github/workflows/homepage-check.yml'
   pull_request:
     paths:
       - 'index.html'
