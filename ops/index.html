@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b0b0c" />
+  <title>Hustle & Shine Ops</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="./app.css" />
+</head>
+<body>
+  <div id="authView" class="auth-shell">
+    <section class="auth-card">
+      <div class="eyebrow">HUSTLE & SHINE</div>
+      <h1>Run the whole shop from one place.</h1>
+      <p class="muted">Jobs, booking leads, prospects, customers, vehicles and services — built for detailing work.</p>
+      <form id="authForm" class="stack">
+        <label>Email<input id="email" type="email" autocomplete="email" required value="Mrbaldwin@hustlenshine.pro" /></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required minlength="8" /></label>
+        <div class="split">
+          <button class="btn primary" type="submit">Sign in</button>
+          <button class="btn" type="button" id="createAccount">Create owner account</button>
+        </div>
+        <p id="authMessage" class="message"></p>
+      </form>
+    </section>
+  </div>
+
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar">
+      <div>
+        <div class="brand-mark">H&S</div>
+        <div class="brand-copy"><strong>Hustle & Shine</strong><span>Operations</span></div>
+      </div>
+      <nav id="nav">
+        <button class="nav-item active" data-view="dashboard">Dashboard</button>
+        <button class="nav-item" data-view="leads">Booking Leads</button>
+        <button class="nav-item" data-view="prospects">Prospects</button>
+        <button class="nav-item" data-view="jobs">Jobs</button>
+        <button class="nav-item" data-view="customers">Customers</button>
+        <button class="nav-item" data-view="garage">Garage</button>
+        <button class="nav-item" data-view="services">Services</button>
+      </nav>
+      <button id="signOut" class="btn ghost">Sign out</button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><div class="eyebrow">OWNER CONSOLE</div><h2 id="pageTitle">Dashboard</h2></div>
+        <div class="top-actions">
+          <button class="btn" id="newProspectBtn">+ Prospect</button>
+          <button class="btn" id="newCustomerBtn">+ Customer</button>
+          <button class="btn primary" id="newJobBtn">+ Job</button>
+        </div>
+      </header>
+
+      <section id="dashboardView" class="view">
+        <div class="metric-grid">
+          <article class="metric"><span>New booking leads</span><strong id="metricLeads">0</strong><small>Waiting on you</small></article>
+          <article class="metric"><span>Upcoming jobs</span><strong id="metricJobs">0</strong><small>Scheduled</small></article>
+          <article class="metric"><span>Customers</span><strong id="metricCustomers">0</strong><small>In your book</small></article>
+          <article class="metric"><span>Services</span><strong id="metricServices">0</strong><small>Active menu</small></article>
+        </div>
+        <div class="two-col">
+          <article class="panel"><div class="panel-head"><h3>Next jobs</h3><button class="text-btn" data-jump="jobs">See all</button></div><div id="nextJobs" class="list"></div></article>
+          <article class="panel"><div class="panel-head"><h3>Fresh booking leads</h3><button class="text-btn" data-jump="leads">See all</button></div><div id="freshLeads" class="list"></div></article>
+        </div>
+      </section>
+
+      <section id="leadsView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Website booking requests</h3></div><div id="leadsList" class="list"></div></div></section>
+      <section id="prospectsView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>Commercial prospects</h3><small>Boise + Treasure Valley businesses you want to turn into recurring accounts.</small></div><button class="btn primary" type="button" id="addProspectInside">+ Add prospect</button></div><div id="prospectsList" class="list"></div></div></section>
+      <section id="jobsView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Jobs</h3></div><div id="jobsList" class="list"></div></div></section>
+      <section id="customersView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Customers</h3></div><div id="customersList" class="list"></div></div></section>
+      <section id="garageView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>Customer garage</h3><small>Every vehicle stays attached to the customer and follows the job history.</small></div><button class="btn primary" type="button" id="newVehicleBtn">+ Add vehicle</button></div><div id="vehiclesList" class="list"></div></div></section>
+      <section id="servicesView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>Service menu</h3><small>Your real packages, base prices and estimated time.</small></div><button class="btn primary" type="button" id="newServiceBtn">+ Add service</button></div><div id="servicesList" class="list"></div></div></section>
+    </main>
+  </div>
+
+  <dialog id="customerDialog">
+    <form id="customerForm" class="modal-card">
+      <div class="panel-head"><h3>New customer</h3><button class="icon-btn" type="button" data-close>×</button></div>
+      <div class="form-grid">
+        <label>First name<input name="first_name" required /></label>
+        <label>Last name<input name="last_name" /></label>
+        <label>Phone<input name="phone" /></label>
+        <label>Email<input name="email" type="email" /></label>
+        <label class="full">Address<input name="address" /></label>
+        <label class="full">Notes<textarea name="notes" rows="3"></textarea></label>
+      </div>
+      <button class="btn primary" type="submit">Save customer</button>
+    </form>
+  </dialog>
+
+  <dialog id="vehicleDialog">
+    <form id="vehicleForm" class="modal-card">
+      <div class="panel-head"><h3>Add customer vehicle</h3><button class="icon-btn" type="button" data-close>×</button></div>
+      <div class="form-grid">
+        <label class="full">Customer<select name="customer_id" id="vehicleCustomer" required></select></label>
+        <label>Year<input name="year" type="number" min="1900" max="2100" /></label>
+        <label>Make<input name="make" placeholder="Ford" /></label>
+        <label>Model<input name="model" placeholder="F-150" /></label>
+        <label>Color<input name="color" /></label>
+        <label>Plate<input name="plate" /></label>
+        <label>VIN<input name="vin" /></label>
+        <label class="full">Notes<textarea name="notes" rows="3" placeholder="Paint condition, pet hair, aftermarket parts, recurring concerns…"></textarea></label>
+      </div>
+      <button class="btn primary" type="submit">Save vehicle</button>
+    </form>
+  </dialog>
+
+  <dialog id="jobDialog">
+    <form id="jobForm" class="modal-card">
+      <div class="panel-head"><h3>New job</h3><button class="icon-btn" type="button" data-close>×</button></div>
+      <div class="form-grid">
+        <label class="full">Customer<select name="customer_id" id="jobCustomer" required></select></label>
+        <label class="full">Vehicle<select name="vehicle_id" id="jobVehicle"><option value="">No vehicle selected</option></select></label>
+        <label class="full">Service<select name="service_id" id="jobService"><option value="">No service selected</option></select></label>
+        <label>Date & time<input name="scheduled_start" type="datetime-local" required /></label>
+        <label>Status<select name="status"><option>scheduled</option><option>confirmed</option><option>in_progress</option><option>completed</option></select></label>
+        <label class="full">Address<input name="address" /></label>
+        <label class="full">Internal notes<textarea name="internal_notes" rows="3"></textarea></label>
+      </div>
+      <button class="btn primary" type="submit">Create job</button>
+    </form>
+  </dialog>
+
+  <dialog id="serviceDialog">
+    <form id="serviceForm" class="modal-card">
+      <div class="panel-head"><h3>Add service</h3><button class="icon-btn" type="button" data-close>×</button></div>
+      <div class="form-grid">
+        <label class="full">Service name<input name="name" required placeholder="Full Interior Detail" /></label>
+        <label>Base price<input name="base_price" type="number" min="0" step="0.01" value="0" /></label>
+        <label>Estimated minutes<input name="duration_minutes" type="number" min="1" value="60" /></label>
+        <label class="full">Description<textarea name="description" rows="4"></textarea></label>
+        <label class="checkbox-row"><input name="active" type="checkbox" checked /> Active and available</label>
+      </div>
+      <button class="btn primary" type="submit">Save service</button>
+    </form>
+  </dialog>
+
+  <dialog id="prospectDialog">
+    <form id="prospectForm" class="modal-card">
+      <div class="panel-head"><h3>New commercial prospect</h3><button class="icon-btn" type="button" data-close>×</button></div>
+      <div class="form-grid">
+        <label class="full">Company name<input name="company_name" required placeholder="Example: Treasure Valley Plumbing" /></label>
+        <label>Category<input name="category" placeholder="HVAC, dealership, landscaping…" /></label>
+        <label>Contact name<input name="contact_name" /></label>
+        <label>Phone<input name="phone" /></label>
+        <label>Email<input name="email" type="email" /></label>
+        <label>City<input name="city" value="Boise" /></label>
+        <label>State<input name="state" value="ID" /></label>
+        <label>Estimated vehicles<input name="estimated_vehicles" type="number" min="0" value="0" /></label>
+        <label>Estimated monthly value<input name="estimated_monthly_value" type="number" min="0" step="1" value="0" /></label>
+        <label>Stage<select name="stage"><option value="new">new</option><option value="researching">researching</option><option value="contacted">contacted</option><option value="follow_up">follow up</option><option value="quote_sent">quote sent</option><option value="won">won</option><option value="lost">lost</option></select></label>
+        <label>Next follow-up<input name="next_follow_up_at" type="datetime-local" /></label>
+        <label class="full">Website<input name="website" type="url" /></label>
+        <label class="full">Address<input name="address" /></label>
+        <label class="full">Notes<textarea name="notes" rows="4" placeholder="Fleet size, decision maker, pricing discussed, next step…"></textarea></label>
+      </div>
+      <button class="btn primary" type="submit">Save prospect</button>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.102.0/dist/umd/supabase.min.js"></script>
+  <script src="./app.js"></script>
+  <script src="./job-tools.js"></script>
+  <script src="./growth-tools.js"></script>
+</body>
+</html>
