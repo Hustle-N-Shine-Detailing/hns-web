@@ -1,4 +1,15 @@
 (() => {
+  // Calling showModal() on a dialog that is already open throws InvalidStateError.
+  // Several live Ops actions refresh an open job workspace, so make repeated opens safe.
+  const nativeShowModal = HTMLDialogElement.prototype.showModal;
+  if (!HTMLDialogElement.prototype.__hnsSafeShowModal) {
+    HTMLDialogElement.prototype.showModal = function() {
+      if (this.open) return;
+      return nativeShowModal.call(this);
+    };
+    Object.defineProperty(HTMLDialogElement.prototype, '__hnsSafeShowModal', { value: true });
+  }
+
   state.servicePriceTiers = state.servicePriceTiers || [];
   state.vehiclePriceTiers = state.vehiclePriceTiers || {};
 
