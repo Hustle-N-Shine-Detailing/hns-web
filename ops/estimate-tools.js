@@ -85,8 +85,15 @@
     }
   }, true);
 
-  const pricingScript = document.createElement('script');
-  pricingScript.src = './pricing-tools.js';
-  pricingScript.async = false;
-  document.body.appendChild(pricingScript);
+  function loadScriptOnce(id, src) {
+    if (document.getElementById(id)) return;
+    const script = document.createElement('script');
+    script.id = id;
+    script.src = src;
+    script.async = false;
+    document.body.appendChild(script);
+  }
+
+  loadScriptOnce('ops-pricing-tools', './pricing-tools.js');
+  loadScriptOnce('ops-direct-job-tools', './direct-job-tools.js');
 })();
