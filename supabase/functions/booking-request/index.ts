@@ -23,7 +23,7 @@ Deno.serve(async (req: Request) => {
     if(data.customer_name.length<2 || !/^[+\d()\s.-]{7,30}$/.test(data.phone) || data.phone.replace(/\D/g,'').length<7)return reply({error:'Enter your name and a valid phone number.'},400);
     if(data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))return reply({error:'Enter a valid email address.'},400);
     const vehicles=['Cars & Sedans','Trucks & SUVs','Oversized & RVs','Boats & Powersports'];
-    const services=['Exterior Wash & Gloss','Interior Restoration','Signature Full Detail','Specialty Vehicle Detail'];
+    const services=['Exterior Wash & Gloss','Interior Restoration','Signature Full Detail','1-Step Paint Correction','2-Step Paint Correction','3-Step Paint Correction','Ceramic Coating','Specialty Vehicle Detail'];
     if(!vehicles.includes(data.vehicle)||!services.includes(data.service))return reply({error:'Choose a vehicle and service.'},400);
     const url=Deno.env.get('SUPABASE_URL')!;
     const secretKeys=JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS')||'{}');
