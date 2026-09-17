@@ -5,12 +5,13 @@
 - Supabase project: `eratuoffduqjywqlljwc` (`hustle-shine-bookings`)
 - Plan quoted at creation: $0/month. Usage and future plan changes remain subject to Supabase billing.
 
-## Owner activation (pending owner's chosen email)
+## Owner access
 
-Do not infer the owner's login email or give every authenticated user access.
-Create/invite the owner's account through Supabase Authentication using the email the owner chooses. Complete the provider's email verification and password setup. Add only that verified user's UUID to `public.admin_members` through the trusted Supabase dashboard or a privileged migration. Do not put owner passwords, invitation links, service keys, or access tokens in this repository.
+The owner account and its private business membership are provisioned. The Ops console has no public registration. Do not put owner passwords, invitation links, service keys, or access tokens in this repository.
 
 The admin site has no public registration. Authentication alone grants no access to requests; the database checks `admin_members` on every read/update. Sign-in sessions use sessionStorage. Customer fields are immutable from the admin interface; only status and private notes can be updated.
+
+The full owner console is at `https://hustlenshine.pro/ops/`. It turns booking requests into customer records, manages estimates and jobs, records inspections and job photos, tracks invoices and expenses, schedules follow-ups and maintenance plans, and runs the commercial prospect pipeline.
 
 ## Behavior and limits
 

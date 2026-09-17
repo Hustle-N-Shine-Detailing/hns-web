@@ -52,3 +52,6 @@ grant execute on function public.accept_request_attempt(text) to service_role;
 grant all on public.booking_requests to service_role;
 
 create policy "Service manages rate limits" on public.request_limits for all to service_role using (true) with check (true);
+
+-- Booking requests can be promoted into the private customer book from Ops.
+-- The deployed migration is tracked in supabase/migrations/20260917100000_convert_booking_leads.sql.
