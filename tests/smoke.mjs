@@ -34,6 +34,11 @@ for (const required of ['appNotice', 'refreshApp', 'lead-tools.js', 'manifest.we
   if (!ops.includes(required)) failures.push(`ops/index.html is missing ${required}`);
 }
 
+const finder = readFileSync(join(root, 'ops/lead-finder-tools.js'), 'utf8');
+for (const required of ['Find Jobs', 'lead_score', 'sales_track', 'Search Idaho bids', 'Search SAM.gov', 'Start with hottest lead']) {
+  if (!finder.includes(required)) failures.push(`Job Finder is missing ${required}`);
+}
+
 const booking = readFileSync(join(root, 'assets/site.js'), 'utf8');
 for (const required of ['Cars & Sedans', 'Trucks & SUVs', 'Ceramic Coating', 'Specialty Vehicle Detail']) {
   if (!booking.includes(required)) failures.push(`Booking flow is missing ${required}`);
