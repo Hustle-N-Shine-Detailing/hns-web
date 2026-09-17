@@ -85,20 +85,4 @@
     }
   }, true);
 
-  function loadScriptOnce(id, src) {
-    if (document.getElementById(id)) return;
-    const script = document.createElement('script');
-    script.id = id;
-    script.src = src;
-    script.async = false;
-    document.body.appendChild(script);
-  }
-
-  loadScriptOnce('ops-runtime-guards', './runtime-guards.js');
-  loadScriptOnce('ops-pricing-tools', './pricing-tools.js');
-  loadScriptOnce('ops-direct-job-tools', './direct-job-tools.js');
-  loadScriptOnce('ops-lead-finder-tools', './lead-finder-tools.js');
-  loadScriptOnce('ops-prospect-tools', './prospect-tools.js');
-  loadScriptOnce('ops-photo-upload-tools', './photo-upload-tools.js');
-  loadScriptOnce('ops-sales-tools', './sales-tools.js');
 })();

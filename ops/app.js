@@ -16,7 +16,7 @@ const state = {
 const $ = (id) => document.getElementById(id);
 const els = {
   authView: $('authView'), appView: $('appView'), authForm: $('authForm'), authMessage: $('authMessage'),
-  email: $('email'), password: $('password'), createAccount: $('createAccount'), signOut: $('signOut'),
+  email: $('email'), password: $('password'), signOut: $('signOut'), refreshApp: $('refreshApp'), appNotice: $('appNotice'),
   pageTitle: $('pageTitle'), nav: $('nav'),
   newCustomerBtn: $('newCustomerBtn'), newJobBtn: $('newJobBtn'), newProspectBtn: $('newProspectBtn'),
   newVehicleBtn: $('newVehicleBtn'), newServiceBtn: $('newServiceBtn'), addProspectInside: $('addProspectInside'),
@@ -31,6 +31,13 @@ const els = {
 function setMessage(text, isError = false) {
   els.authMessage.textContent = text || '';
   els.authMessage.style.color = isError ? 'var(--danger)' : '';
+}
+
+function showAppNotice(text = '', isError = false) {
+  if (!els.appNotice) return;
+  els.appNotice.textContent = text;
+  els.appNotice.classList.toggle('hidden', !text);
+  els.appNotice.classList.toggle('error', Boolean(text) && isError);
 }
 
 function fmtDate(value) {
@@ -109,7 +116,7 @@ async function loadMembership() {
 async function loadAll() {
   if (!state.businessId) return;
   const [leads, jobs, customers, vehicles, services, prospects] = await Promise.all([
-    db.from('booking_requests').select('id,created_at,customer_name,phone,email,city,vehicle,service,customer_notes,status,admin_notes').order('created_at', { ascending: false }).limit(100),
+    db.from('booking_requests').select('id,created_at,customer_name,phone,email,city,vehicle,service,customer_notes,status,admin_notes,converted_customer_id,converted_at').order('created_at', { ascending: false }).limit(100),
     db.from('jobs').select('id,scheduled_start,status,address,total,internal_notes,customers(first_name,last_name),vehicles(year,make,model,color,plate)').eq('business_id', state.businessId).order('scheduled_start', { ascending: true }).limit(100),
     db.from('customers').select('id,first_name,last_name,phone,email,address,notes,created_at').eq('business_id', state.businessId).order('created_at', { ascending: false }).limit(200),
     db.from('vehicles').select('id,customer_id,year,make,model,color,plate,vin,notes,created_at,customers(first_name,last_name)').eq('business_id', state.businessId).order('created_at', { ascending: false }).limit(300),
@@ -300,14 +307,22 @@ async function bootForSession(session) {
   }
   try {
     await loadMembership();
-    els.authView.classList.add('hidden');
-    els.appView.classList.remove('hidden');
-    await loadAll();
   } catch (error) {
     await db.auth.signOut();
     els.appView.classList.add('hidden');
     els.authView.classList.remove('hidden');
     setMessage(error.message, true);
+    return;
+  }
+  els.authView.classList.add('hidden');
+  els.appView.classList.remove('hidden');
+  showAppNotice('Loading your shop…');
+  try {
+    await loadAll();
+    showAppNotice();
+  } catch (error) {
+    console.error('Unable to refresh the owner console.', error);
+    showAppNotice('Some shop data could not load. Check your connection and tap Refresh.', true);
   }
 }
 
@@ -318,18 +333,14 @@ els.authForm.addEventListener('submit', async event => {
   if (error) setMessage(error.message, true);
 });
 
-els.createAccount.addEventListener('click', async () => {
-  const email = els.email.value.trim();
-  const password = els.password.value;
-  if (!email || password.length < 8) return setMessage('Enter your owner email and a password with at least 8 characters.', true);
-  setMessage('Creating owner account…');
-  const { data, error } = await db.auth.signUp({ email, password });
-  if (error) return setMessage(error.message, true);
-  if (data.session) return setMessage('Owner account created. Loading dashboard…');
-  setMessage('Account created. Check your email for the confirmation link, then come back and sign in.');
-});
-
 els.signOut.addEventListener('click', () => db.auth.signOut());
+els.refreshApp.addEventListener('click', async () => {
+  els.refreshApp.disabled = true;
+  showAppNotice('Refreshing your shop…');
+  try { await loadAll(); showAppNotice(); }
+  catch (error) { console.error(error); showAppNotice('Refresh failed. Check your connection and try again.', true); }
+  finally { els.refreshApp.disabled = false; }
+});
 els.nav.addEventListener('click', e => { const btn = e.target.closest('[data-view]'); if (btn) showView(btn.dataset.view); });
 document.addEventListener('click', e => { const jump = e.target.closest('[data-jump]'); if (jump) showView(jump.dataset.jump); });
 document.querySelectorAll('[data-close]').forEach(btn => btn.addEventListener('click', () => btn.closest('dialog').close()));

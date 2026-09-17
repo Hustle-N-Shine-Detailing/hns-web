@@ -5,6 +5,7 @@
   },
   "private": true,
   "scripts": {
-    "build:admin": "esbuild src/supabase-client.js --bundle --minify --format=iife --platform=browser --outfile=assets/supabase-client.js"
+    "build:admin": "esbuild src/supabase-client.js --bundle --minify --format=iife --platform=browser --outfile=assets/supabase-client.js",
+    "test": "node tests/smoke.mjs"
   }
 }

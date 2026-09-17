@@ -4,7 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#0b0b0c" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Hustle & Shine Ops</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="stylesheet" href="./app.css" />
 </head>
@@ -17,10 +21,8 @@
       <form id="authForm" class="stack">
         <label>Email<input id="email" type="email" autocomplete="email" required value="Mrbaldwin@hustlenshine.pro" /></label>
         <label>Password<input id="password" type="password" autocomplete="current-password" required minlength="8" /></label>
-        <div class="split">
-          <button class="btn primary" type="submit">Sign in</button>
-          <button class="btn" type="button" id="createAccount">Create owner account</button>
-        </div>
+        <button class="btn primary" type="submit">Sign in</button>
+        <a class="auth-help" href="mailto:Mrbaldwin@hustlenshine.pro?subject=Hustle%20%26%20Shine%20Ops%20login">Trouble signing in?</a>
         <p id="authMessage" class="message"></p>
       </form>
     </section>
@@ -48,11 +50,13 @@
       <header class="topbar">
         <div><div class="eyebrow">OWNER CONSOLE</div><h2 id="pageTitle">Dashboard</h2></div>
         <div class="top-actions">
+          <button class="btn" id="refreshApp" type="button">Refresh</button>
           <button class="btn" id="newProspectBtn">+ Prospect</button>
           <button class="btn" id="newCustomerBtn">+ Customer</button>
           <button class="btn primary" id="newJobBtn">+ Job</button>
         </div>
       </header>
+      <div id="appNotice" class="app-notice hidden" role="status"></div>
 
       <section id="dashboardView" class="view">
         <div class="metric-grid">
@@ -163,8 +167,16 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.102.0/dist/umd/supabase.min.js"></script>
   <script src="./app.js"></script>
+  <script src="./runtime-guards.js"></script>
   <script src="./job-tools.js"></script>
   <script src="./growth-tools.js"></script>
   <script src="./estimate-tools.js"></script>
+  <script src="./pricing-tools.js"></script>
+  <script src="./direct-job-tools.js"></script>
+  <script src="./lead-finder-tools.js"></script>
+  <script src="./prospect-tools.js"></script>
+  <script src="./photo-upload-tools.js"></script>
+  <script src="./sales-tools.js"></script>
+  <script src="./lead-tools.js"></script>
 </body>
 </html>
