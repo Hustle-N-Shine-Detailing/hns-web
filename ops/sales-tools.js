@@ -7,11 +7,13 @@
     .sales-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
     .sales-metric{padding:16px;border:1px solid var(--line);border-radius:14px;background:#0c0c0e;display:grid;gap:5px}
     .sales-metric span{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.sales-metric strong{font-size:1.55rem}
+    .sales-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px}.sales-toolbar label{min-width:210px}.sales-track-note{font-size:.76rem;color:var(--muted);padding-bottom:9px}
     .sales-card{padding:16px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:start}.sales-card:last-child{border-bottom:0}
-    .sales-title{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sales-title h4{margin:0;font-size:1rem}.sales-score{font-size:.7rem;font-weight:800;padding:4px 7px;border:1px solid var(--line);border-radius:999px;background:#111}
+    .sales-title{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sales-title h4{margin:0;font-size:1rem}.sales-score,.sales-track{font-size:.7rem;font-weight:800;padding:4px 7px;border:1px solid var(--line);border-radius:999px;background:#111}
+    .sales-track{font-weight:700;color:var(--muted)}
     .sales-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:6px;color:var(--muted);font-size:.76rem}.sales-copy{font-size:.82rem;line-height:1.45;margin-top:9px;color:#d0d0d5}.sales-copy strong{color:#fff}
     .sales-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.sales-actions a{text-decoration:none}.sales-due{font-size:.72rem;color:var(--muted);margin-top:7px}.sales-due.overdue{color:var(--danger)}
-    @media(max-width:800px){.sales-metrics{grid-template-columns:1fr 1fr}.sales-card{grid-template-columns:1fr}.sales-actions{justify-content:flex-start}}
+    @media(max-width:800px){.sales-metrics{grid-template-columns:1fr 1fr}.sales-card{grid-template-columns:1fr}.sales-actions{justify-content:flex-start}.sales-toolbar{display:grid}.sales-toolbar label{min-width:0}}
   `;
   document.head.appendChild(style);
 
@@ -27,7 +29,16 @@
   view.innerHTML = `
     <div id="salesMetrics" class="sales-metrics"></div>
     <div class="panel">
-      <div class="panel-head"><div><h3>Hot leads</h3><small>Best-fit commercial accounts first. Call, pitch, then move the ones with real interest into Prospects.</small></div></div>
+      <div class="panel-head"><div><h3>Account hunter</h3><small>Work the right sales motion instead of treating every fleet the same.</small></div></div>
+      <div class="sales-toolbar">
+        <label>Sales lane<select id="salesTrackFilter">
+          <option value="quick_close">Quick Close</option>
+          <option value="recurring_fleet">Recurring Fleet</option>
+          <option value="procurement">Procurement / Whale</option>
+          <option value="">All researched leads</option>
+        </select></label>
+        <div id="salesTrackNote" class="sales-track-note"></div>
+      </div>
       <div id="salesHotLeads" class="list"></div>
     </div>
     <div class="panel" style="margin-top:14px">
@@ -39,6 +50,19 @@
   const metrics = document.getElementById('salesMetrics');
   const hotList = document.getElementById('salesHotLeads');
   const prospectList = document.getElementById('salesProspects');
+  const trackFilter = document.getElementById('salesTrackFilter');
+  const trackNote = document.getElementById('salesTrackNote');
+
+  const trackLabels = {
+    quick_close: 'Quick Close',
+    recurring_fleet: 'Recurring Fleet',
+    procurement: 'Procurement / Whale'
+  };
+  const trackNotes = {
+    quick_close: 'Local owner/manager. Goal: get a pilot vehicle or small fleet trial quickly.',
+    recurring_fleet: 'Route-heavy fleet. Goal: land a monthly rotation with repeatable volume.',
+    procurement: 'Longer cycle. Goal: learn vendor rules, get registered, and stay in front of the buyer.'
+  };
 
   const previousShowView = showView;
   showView = function(name) {
@@ -73,11 +97,11 @@
     if (!state.businessId) return;
     const [leadRes, prospectRes] = await Promise.all([
       db.from('lead_candidates')
-        .select('id,company_name,category,phone,email,website,city,state,fit_reason,status,prospect_id,lead_score,suggested_offer,next_action,researched_at')
+        .select('id,company_name,category,phone,email,website,city,state,fit_reason,status,prospect_id,lead_score,suggested_offer,next_action,researched_at,sales_track')
         .eq('business_id', state.businessId)
         .eq('status', 'new')
         .order('lead_score', { ascending: false })
-        .limit(100),
+        .limit(200),
       db.from('prospects')
         .select('id,company_name,category,contact_name,phone,email,website,city,state,stage,last_contact_at,next_follow_up_at,estimated_monthly_value,notes')
         .eq('business_id', state.businessId)
@@ -95,10 +119,10 @@
     const active = state.salesProspects.filter(p => !['won','lost'].includes(p.stage));
     const now = Date.now();
     const due = active.filter(p => !p.next_follow_up_at || new Date(p.next_follow_up_at).getTime() <= now).length;
-    const hot = state.salesLeadCandidates.filter(l => Number(l.lead_score || 0) >= 90).length;
+    const hot = state.salesLeadCandidates.filter(l => Number(l.lead_score || 0) >= 95).length;
     const quotes = state.salesProspects.filter(p => p.stage === 'quote_sent').length;
     const won = state.salesProspects.filter(p => p.stage === 'won').length;
-    const cards = [['90+ leads', hot], ['Due now', due], ['Quotes out', quotes], ['Won', won]];
+    const cards = [['95+ leads', hot], ['Due now', due], ['Quotes out', quotes], ['Won', won]];
     metrics.replaceChildren();
     cards.forEach(([label, value]) => {
       const card = document.createElement('article'); card.className = 'sales-metric';
@@ -127,15 +151,22 @@
 
   function renderHotLeads() {
     hotList.replaceChildren();
-    const leads = state.salesLeadCandidates.slice().sort((a,b) => Number(b.lead_score || 0) - Number(a.lead_score || 0));
-    if (!leads.length) return empty(hotList, 'No new leads are waiting.');
+    const selectedTrack = trackFilter.value;
+    trackNote.textContent = selectedTrack ? trackNotes[selectedTrack] : 'All sales motions together. Use this only when you want the full research pool.';
+    const leads = state.salesLeadCandidates
+      .filter(item => !selectedTrack || item.sales_track === selectedTrack)
+      .slice()
+      .sort((a,b) => Number(b.lead_score || 0) - Number(a.lead_score || 0))
+      .slice(0, 25);
+    if (!leads.length) return empty(hotList, 'No new leads are waiting in this sales lane.');
     leads.forEach(item => {
       const card = document.createElement('article'); card.className = 'sales-card';
       const copy = document.createElement('div');
       const title = document.createElement('div'); title.className = 'sales-title';
       const h = document.createElement('h4'); h.textContent = item.company_name;
       const score = document.createElement('span'); score.className = 'sales-score'; score.textContent = `${Number(item.lead_score || 0)}/100`;
-      title.append(h, score);
+      const track = document.createElement('span'); track.className = 'sales-track'; track.textContent = trackLabels[item.sales_track] || 'Lead';
+      title.append(h, score, track);
       const meta = document.createElement('div'); meta.className = 'sales-meta';
       [item.category, [item.city,item.state].filter(Boolean).join(', '), item.phone].filter(Boolean).forEach(v => { const s=document.createElement('span'); s.textContent=v; meta.appendChild(s); });
       const pitch = document.createElement('div'); pitch.className = 'sales-copy';
@@ -215,6 +246,8 @@
     renderHotLeads();
     renderProspectQueue();
   }
+
+  trackFilter.addEventListener('change', renderHotLeads);
 
   const previousLoadAll = loadAll;
   loadAll = async function() {
