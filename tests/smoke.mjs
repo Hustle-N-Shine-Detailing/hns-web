@@ -43,6 +43,14 @@ const booking = readFileSync(join(root, 'assets/site.js'), 'utf8');
 for (const required of ['Cars & Sedans', 'Trucks & SUVs', 'Ceramic Coating', 'Specialty Vehicle Detail']) {
   if (!booking.includes(required)) failures.push(`Booking flow is missing ${required}`);
 }
+for (const required of ["track('page_view')", "track('booking_open')", "trackHandoff('payment_click')", 'Save request & continue']) {
+  if (!booking.includes(required)) failures.push(`Traffic or abandoned-booking tracking is missing ${required}`);
+}
+
+const admin = readFileSync(join(root, 'admin/admin.js'), 'utf8');
+for (const required of ['loadTraffic', 'site_events', 'payment_clicked_at', 'calendar_clicked_at']) {
+  if (!admin.includes(required)) failures.push(`Admin analytics is missing ${required}`);
+}
 
 if (failures.length) {
   console.error(failures.join('\n'));
