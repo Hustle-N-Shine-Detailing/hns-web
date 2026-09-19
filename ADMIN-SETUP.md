@@ -15,9 +15,11 @@ The full owner console is at `https://hustlenshine.pro/ops/`. It turns booking r
 
 ## Behavior and limits
 
-The website request form saves submitted names, contact information, vehicle/service choices and optional notes. A submitted request is not a confirmed appointment. Calendly appointments and Stripe payments are NOT automatically synchronized. Direct calendar visitors and abandoned forms are not identified. The dashboard lists 50 records at a time with a Load older requests button. Search and counts apply to loaded records.
+The website request form saves submitted names, contact information, vehicle/service choices and optional notes before showing Calendly and Stripe handoff buttons. A submitted request is not a confirmed appointment. The dashboard records when a saved request opens Calendly or Stripe, but it does not claim that an appointment or payment completed; confirm those separately. The dashboard lists 50 booking records at a time with a Load older requests button. Search and booking counts apply to loaded records.
 
-The public Edge Function validates input and consent, rejects a honeypot field, limits body size, and rate-limits requests to five per IP hash per hour. Rate-limit records older than 48 hours are cleaned during requests. This is basic spam protection, not a CAPTCHA. Failed requests show a call/text fallback. Public API keys identify the project; they do not authorize access to customer data.
+The site also records privacy-friendly traffic events: page views, booking opens, calendar clicks, Stripe clicks, call clicks and text clicks. It stores the page path, referral host, device category, country code when supplied by the edge network, and UTM campaign fields. It never stores raw visitor IP addresses. An approximate visitor hash is created server-side from the network address and user agent and rotates monthly. No analytics cookie is used. The owner dashboard shows a rolling seven-day summary.
+
+The public Edge Function validates input and consent, rejects a honeypot field, limits body size, and rate-limits booking requests to five per IP hash per hour. Analytics events have a separate 120-per-hour rate limit. Rate-limit records older than 48 hours are cleaned during requests. This is basic spam protection, not a CAPTCHA. Failed booking requests show a call/text fallback. Public API keys identify the project; they do not authorize access to customer data.
 
 ## Maintenance
 
