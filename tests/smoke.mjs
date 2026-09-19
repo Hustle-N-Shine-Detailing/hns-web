@@ -19,6 +19,31 @@ for (const folder of ['assets', 'admin', 'ops']) {
   }
 }
 
+const migrationsDirectory = join(root, 'supabase/migrations');
+const migrations = readdirSync(migrationsDirectory)
+  .filter(file => file.endsWith('.sql'))
+  .sort();
+
+if (!migrations.length) failures.push('No Supabase migrations were found.');
+if (new Set(migrations).size !== migrations.length) failures.push('Supabase migration names must be unique.');
+for (const migration of migrations) {
+  if (!/^\d{14}_[a-z0-9_]+\.sql$/.test(migration)) {
+    failures.push(`Invalid migration filename: ${migration}`);
+  }
+  const sql = readFileSync(join(migrationsDirectory, migration), 'utf8');
+  if (!sql.trim()) failures.push(`${migration} is empty.`);
+  if (/^(?:<{7}|={7}|>{7})/m.test(sql)) failures.push(`${migration} contains merge-conflict markers.`);
+}
+
+const edgeFunction = join(root, 'supabase/functions/booking-request/index.ts');
+if (!existsSync(edgeFunction)) failures.push('The booking-request Edge Function is missing.');
+else {
+  const edgeSource = readFileSync(edgeFunction, 'utf8');
+  for (const required of ['Deno.serve', 'allowedOrigins', 'accept_request_attempt', 'accept_site_event']) {
+    if (!edgeSource.includes(required)) failures.push(`Edge Function is missing ${required}`);
+  }
+}
+
 for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html')]) {
   const html = readFileSync(htmlFile, 'utf8');
   const refs = [...html.matchAll(/(?:src|href)=["']([^"'#?]+)(?:\?[^"']*)?["']/g)].map(match => match[1]);
