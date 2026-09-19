@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "build:admin": "esbuild src/supabase-client.js --bundle --minify --format=iife --platform=browser --outfile=assets/supabase-client.js",
+    "check:edge": "esbuild supabase/functions/booking-request/index.ts --bundle --platform=neutral --external:https://* --external:jsr:* --outfile=/tmp/hns-booking-request.js --log-level=warning",
     "test": "node tests/smoke.mjs"
   }
 }
