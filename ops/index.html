@@ -10,7 +10,7 @@
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./icon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-  <link rel="stylesheet" href="./app.css" />
+  <link rel="stylesheet" href="./app.css?v=20260920-ops" />
 </head>
 <body>
   <div id="authView" class="auth-shell">
@@ -32,7 +32,7 @@
     <aside class="sidebar">
       <div>
         <div class="brand-mark">H&S</div>
-        <div class="brand-copy"><strong>Hustle & Shine</strong><span>Operations</span></div>
+        <div class="brand-copy"><strong>Hustle & Shine</strong><span>Owner operations</span></div>
       </div>
       <nav id="nav">
         <button class="nav-item active" data-view="dashboard">Dashboard</button>
@@ -42,13 +42,14 @@
         <button class="nav-item" data-view="customers">Customers</button>
         <button class="nav-item" data-view="garage">Garage</button>
         <button class="nav-item" data-view="services">Services</button>
+        <a class="nav-item nav-link" href="../admin/">Website traffic</a>
       </nav>
-      <button id="signOut" class="btn ghost">Sign out</button>
+      <div class="sidebar-footer"><a class="site-link" href="../" target="_blank" rel="noopener">View public website ↗</a><button id="signOut" class="btn ghost">Sign out</button></div>
     </aside>
 
     <main class="main">
       <header class="topbar">
-        <div><div class="eyebrow">OWNER CONSOLE</div><h2 id="pageTitle">Dashboard</h2></div>
+        <div><div class="topline"><span class="eyebrow">OWNER CONSOLE</span><span class="live-chip">LIVE</span></div><h2 id="pageTitle">Dashboard</h2></div>
         <div class="top-actions">
           <button class="btn" id="refreshApp" type="button">Refresh</button>
           <button class="btn" id="newProspectBtn">+ Prospect</button>
