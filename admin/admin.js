@@ -22,6 +22,8 @@
     const views=events.filter(event=>event.event_name==='page_view');
     $('count-views').textContent=views.length;$('count-visitors').textContent=new Set(views.map(event=>event.visitor_hash)).size;
     $('count-booking-opens').textContent=events.filter(event=>event.event_name==='booking_open').length;
+    $('count-contact-clicks').textContent=events.filter(event=>event.event_name==='call_click'||event.event_name==='text_click').length;
+    $('count-calendar-clicks').textContent=events.filter(event=>event.event_name==='calendar_click').length;
     $('count-payment-clicks').textContent=events.filter(event=>event.event_name==='payment_click').length;
     breakdown($('traffic-sources'),views.map(event=>event.utm_source||event.referrer_host||'Direct / unknown'),'No source data yet.');
     breakdown($('traffic-devices'),views.map(event=>event.device_type||'unknown'),'No device data yet.');

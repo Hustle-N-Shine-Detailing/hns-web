@@ -1,6 +1,147 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Booking inbox | Hustle &amp; Shine</title><link rel="stylesheet" href="admin.css"></head><body>
-<header><a href="/">Hustle <span>&amp;</span> Shine</a><span>Owner dashboard</span><button id="logout" hidden>Sign out</button></header>
-<main>
-<section id="login-panel" class="login-panel"><p class="eyebrow">Private access</p><h1>Your booking inbox.</h1><p>Sign in with your activated owner account.</p><form id="login-form"><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><button class="primary" id="login-button">Sign in</button></form><p id="login-message" role="status"></p><p class="muted">First-time access must be activated by the site administrator. Customer details are never visible without an authorized account.</p><a href="/">Back to website</a></section>
-<section id="dashboard" hidden><div class="page-heading"><div><p class="eyebrow">Hustle &amp; Shine</p><h1>Website activity &amp; bookings</h1><p>See visits, booking interest, and people who asked for service.</p></div><button id="refresh">Refresh dashboard</button></div><p class="notice">Stripe payments and Calendly appointments still need separate confirmation. This dashboard now shows when a saved request clicked either option.</p><section class="traffic-panel" aria-labelledby="traffic-heading"><div class="section-title"><div><p class="eyebrow">Last 7 days</p><h2 id="traffic-heading">Website traffic</h2></div><span id="traffic-message" class="muted">Loading traffic…</span></div><div class="stats traffic-stats"><div><strong id="count-views">0</strong><span>Page views</span></div><div><strong id="count-visitors">0</strong><span>Approx. visitors</span></div><div><strong id="count-booking-opens">0</strong><span>Booking opens</span></div><div><strong id="count-payment-clicks">0</strong><span>Stripe clicks</span></div></div><div class="traffic-breakdown"><div><h3>Where visitors came from</h3><div id="traffic-sources" class="source-list"></div></div><div><h3>Devices</h3><div id="traffic-devices" class="source-list"></div></div></div></section><div class="section-title booking-title"><div><p class="eyebrow">Follow-up inbox</p><h2>Booking requests</h2></div></div><div class="stats"><div><strong id="count-new">0</strong><span>New</span></div><div><strong id="count-contacted">0</strong><span>Contacted</span></div><div><strong id="count-scheduled">0</strong><span>Scheduled</span></div><div><strong id="count-total">0</strong><span>Loaded requests</span></div></div><div class="filters"><label>Find a customer<input id="search" type="search" placeholder="Name, phone, service or city"></label><label>Status<select id="filter"><option value="all">All statuses</option><option value="new">New</option><option value="contacted">Contacted</option><option value="scheduled">Scheduled</option><option value="completed">Completed</option><option value="closed">Closed</option></select></label></div><p id="inbox-message" role="status"></p><div id="requests"></div><button id="load-more" hidden>Load older requests</button></section>
-</main><script src="../assets/supabase-client.js"></script><script src="admin.js?v=20260919-analytics"></script></body></html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Booking inbox | Hustle &amp; Shine</title>
+    <link rel="stylesheet" href="admin.css?v=20260920-dashboard" />
+  </head>
+  <body>
+    <header>
+      <a href="/">Hustle <span>&amp;</span> Shine</a><span>Owner dashboard</span
+      ><button id="logout" hidden>Sign out</button>
+    </header>
+    <main>
+      <section id="login-panel" class="login-panel">
+        <p class="eyebrow">Private access</p>
+        <h1>Your booking inbox.</h1>
+        <p>Sign in with your activated owner account.</p>
+        <form id="login-form">
+          <label
+            >Email<input
+              id="email"
+              type="email"
+              autocomplete="username"
+              required /></label
+          ><label
+            >Password<input
+              id="password"
+              type="password"
+              autocomplete="current-password"
+              required /></label
+          ><button class="primary" id="login-button">Sign in</button>
+        </form>
+        <p id="login-message" role="status"></p>
+        <p class="muted">
+          First-time access must be activated by the site administrator.
+          Customer details are never visible without an authorized account.
+        </p>
+        <a href="/">Back to website</a>
+      </section>
+      <section id="dashboard" hidden>
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">Hustle &amp; Shine</p>
+            <h1>Website activity &amp; bookings</h1>
+            <p>
+              See visits, booking interest, contact clicks, and people who asked
+              for service.
+            </p>
+          </div>
+          <button id="refresh">Refresh dashboard</button>
+        </div>
+        <p class="notice">
+          Stripe payments and Calendly appointments still need separate
+          confirmation. This dashboard shows when visitors open booking or tap a
+          contact, schedule, or payment option.
+        </p>
+        <section class="traffic-panel" aria-labelledby="traffic-heading">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Last 7 days</p>
+              <h2 id="traffic-heading">Website traffic</h2>
+            </div>
+            <span id="traffic-message" class="muted">Loading traffic…</span>
+          </div>
+          <div class="stats traffic-stats">
+            <div>
+              <strong id="count-views">0</strong><span>Page views</span>
+            </div>
+            <div>
+              <strong id="count-visitors">0</strong
+              ><span>Approx. visitors</span>
+            </div>
+            <div>
+              <strong id="count-booking-opens">0</strong
+              ><span>Booking opens</span>
+            </div>
+            <div>
+              <strong id="count-contact-clicks">0</strong
+              ><span>Call or text taps</span>
+            </div>
+            <div>
+              <strong id="count-calendar-clicks">0</strong
+              ><span>Calendly clicks</span>
+            </div>
+            <div>
+              <strong id="count-payment-clicks">0</strong
+              ><span>Stripe clicks</span>
+            </div>
+          </div>
+          <div class="traffic-breakdown">
+            <div>
+              <h3>Where visitors came from</h3>
+              <div id="traffic-sources" class="source-list"></div>
+            </div>
+            <div>
+              <h3>Devices</h3>
+              <div id="traffic-devices" class="source-list"></div>
+            </div>
+          </div>
+        </section>
+        <div class="section-title booking-title">
+          <div>
+            <p class="eyebrow">Follow-up inbox</p>
+            <h2>Booking requests</h2>
+          </div>
+        </div>
+        <div class="stats">
+          <div><strong id="count-new">0</strong><span>New</span></div>
+          <div>
+            <strong id="count-contacted">0</strong><span>Contacted</span>
+          </div>
+          <div>
+            <strong id="count-scheduled">0</strong><span>Scheduled</span>
+          </div>
+          <div>
+            <strong id="count-total">0</strong><span>Loaded requests</span>
+          </div>
+        </div>
+        <div class="filters">
+          <label
+            >Find a customer<input
+              id="search"
+              type="search"
+              placeholder="Name, phone, service or city" /></label
+          ><label
+            >Status<select id="filter">
+              <option value="all">All statuses</option>
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+              <option value="closed">Closed</option>
+            </select></label
+          >
+        </div>
+        <p id="inbox-message" role="status"></p>
+        <div id="requests"></div>
+        <button id="load-more" hidden>Load older requests</button>
+      </section>
+    </main>
+    <script src="../assets/supabase-client.js"></script>
+    <script src="admin.js?v=20260920-intent"></script>
+  </body>
+</html>
