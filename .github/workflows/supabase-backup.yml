@@ -109,7 +109,7 @@ jobs:
             echo "storage_status=$(cat backup/storage-status.txt 2>/dev/null || echo unknown)"
           } > backup/manifest.txt
 
-          find backup -type f -print0 | sort -z | xargs -0 sha256sum > backup/SHA256SUMS
+          find backup -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > /tmp/SHA256SUMS\n          mv /tmp/SHA256SUMS backup/SHA256SUMS
           tar -czf "${archive}" backup
 
           openssl enc -aes-256-cbc             -salt             -pbkdf2             -iter 600000             -md sha256             -in "${archive}"             -out "${encrypted}"             -pass env:BACKUP_ENCRYPTION_PASSWORD
