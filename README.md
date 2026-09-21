@@ -74,3 +74,10 @@ The public booking function is deployed with `verify_jwt=false` because the webs
 - Track remaining work as GitHub issues rather than leaving it only in chat or commit messages.
 
 Additional setup notes are in `ADMIN-SETUP.md` and `GITHUB-PAGES-SETUP.md`.
+
+
+## Backups
+
+Supabase Free does not provide the same automatic backup retention as paid plans. This repository includes a daily encrypted logical-backup workflow at `.github/workflows/supabase-backup.yml`.
+
+See `BACKUP-AND-RECOVERY.md` for the required GitHub Actions secrets, verification procedure, and restore runbook. Never commit production dumps or unencrypted customer data to this public repository.
