@@ -48,7 +48,7 @@ for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html')
   const html = readFileSync(htmlFile, 'utf8');
   const refs = [...html.matchAll(/(?:src|href)=["']([^"'#?]+)(?:\?[^"']*)?["']/g)].map(match => match[1]);
   for (const ref of refs) {
-    if (/^(?:https?:|mailto:|tel:|data:|\/\/)/.test(ref)) continue;
+    if (/^(?:https?:|mailto:|tel:|sms:|data:|\/\/)/.test(ref)) continue;
     const local = resolve(join(htmlFile, '..'), ref);
     if (!existsSync(local)) failures.push(`${htmlFile}: missing local asset ${ref}`);
   }
