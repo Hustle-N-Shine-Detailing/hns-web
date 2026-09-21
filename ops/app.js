@@ -100,7 +100,7 @@ function showView(name) {
   if (target) target.classList.remove('hidden');
   const titles = {
     dashboard: 'Dashboard', leads: 'Booking Leads', prospects: 'Prospects', jobs: 'Jobs',
-    customers: 'Customers', garage: 'Garage', services: 'Services'
+    customers: 'Customers', garage: 'Garage', services: 'Services', trade: 'Trade Partners'
   };
   els.pageTitle.textContent = titles[name] || 'Dashboard';
 }

@@ -42,6 +42,7 @@
         <button class="nav-item" data-view="customers">Customers</button>
         <button class="nav-item" data-view="garage">Garage</button>
         <button class="nav-item" data-view="services">Services</button>
+        <button class="nav-item" data-view="trade">Trade Partners</button>
         <a class="nav-item nav-link" href="../admin/">Website traffic</a>
       </nav>
       <div class="sidebar-footer"><a class="site-link" href="../" target="_blank" rel="noopener">View public website ↗</a><button id="signOut" class="btn ghost">Sign out</button></div>
@@ -78,6 +79,76 @@
       <section id="customersView" class="view hidden"><div class="panel"><div class="panel-head"><h3>Customers</h3></div><div id="customersList" class="list"></div></div></section>
       <section id="garageView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>Customer garage</h3><small>Every vehicle stays attached to the customer and follows the job history.</small></div><button class="btn primary" type="button" id="newVehicleBtn">+ Add vehicle</button></div><div id="vehiclesList" class="list"></div></div></section>
       <section id="servicesView" class="view hidden"><div class="panel"><div class="panel-head"><div><h3>Service menu</h3><small>Your real packages, base prices and estimated time.</small></div><button class="btn primary" type="button" id="newServiceBtn">+ Add service</button></div><div id="servicesList" class="list"></div></div></section>
+
+      <section id="tradeView" class="view hidden">
+        <div class="trade-hero panel">
+          <div>
+            <div class="eyebrow">WHITE-LABEL / DEALER FULFILLMENT</div>
+            <h3>Your partner keeps the customer. You do the work.</h3>
+            <p>Use this program for dealership recon overflow, body-shop final delivery cleanup, fleet accounts, rental turns, and other detailers who need a reliable fulfillment partner.</p>
+          </div>
+          <a class="btn primary" href="../trade-partners/" target="_blank" rel="noopener">Open partner page ↗</a>
+        </div>
+
+        <div class="trade-grid">
+          <article class="panel trade-card"><span class="trade-kicker">01</span><h3>Partner owns the relationship</h3><p class="muted">No poaching. No marketing to their customer. Their customer stays their customer unless they explicitly introduce you.</p></article>
+          <article class="panel trade-card"><span class="trade-kicker">02</span><h3>Wholesale per vehicle</h3><p class="muted">Quote by vehicle class and condition. Any heavy-soil, pet-hair, bio, oxidation, or correction upcharge is approved before work begins.</p></article>
+          <article class="panel trade-card"><span class="trade-kicker">03</span><h3>Protect cash flow</h3><p class="muted">First 3 vehicles: pay on completion. Approved recurring partners: Net 7. Net 15 only after a reliable payment history.</p></article>
+        </div>
+
+        <article class="panel trade-rate-panel">
+          <div class="panel-head"><div><h3>Wholesale rate card</h3><small>Starting rates. Raise pricing for excessive condition, oversized vehicles, travel, or specialty work.</small></div></div>
+          <div class="trade-rate-table">
+            <div class="trade-rate-row trade-rate-head"><strong>Service</strong><strong>Car / Sedan</strong><strong>Truck / SUV</strong></div>
+            <div class="trade-rate-row"><span><b>Dealer Delivery Prep</b><small>Wash, wheels, glass, vacuum, wipe-down, presentation finish.</small></span><strong>$75</strong><strong>$95</strong></div>
+            <div class="trade-rate-row"><span><b>Body Shop Final Cleanup</b><small>Repair dust cleanup, vacuum, glass, exterior wash and delivery-ready finish.</small></span><strong>$95</strong><strong>$125</strong></div>
+            <div class="trade-rate-row"><span><b>Interior Reset</b><small>Vacuum, surfaces, glass, spot treatment and light extraction as needed.</small></span><strong>$115</strong><strong>$155</strong></div>
+            <div class="trade-rate-row"><span><b>Frontline Recon</b><small>Interior reset + exterior wash/decon/gloss for used inventory.</small></span><strong>$175</strong><strong>$235</strong></div>
+            <div class="trade-rate-row"><span><b>Heavy Recon</b><small>Neglected inventory requiring deeper extraction, agitation and added labor.</small></span><strong>$225+</strong><strong>$295+</strong></div>
+            <div class="trade-rate-row"><span><b>Paint Enhancement</b><small>Light machine polish for gloss and light swirl reduction.</small></span><strong>$195+</strong><strong>$245+</strong></div>
+          </div>
+          <div class="trade-addons">
+            <span>Odor / stain remediation: <b>+$50-$125</b></span>
+            <span>Pet hair / excessive soil: <b>+$50-$125</b></span>
+            <span>Paint correction / ceramic: <b>custom wholesale quote</b></span>
+          </div>
+        </article>
+
+        <div class="two-col trade-two-col">
+          <article class="panel">
+            <div class="panel-head"><div><h3>Partner margin calculator</h3><small>Check whether both sides make money before quoting.</small></div></div>
+            <div class="form-grid trade-calc">
+              <label>Hustle & Shine wholesale cost<input id="tradeWholesale" type="number" min="0" step="1" value="175" /></label>
+              <label>Partner sells it for<input id="tradeRetail" type="number" min="0" step="1" value="275" /></label>
+            </div>
+            <div class="trade-margin-results">
+              <div><span>Partner gross profit</span><strong id="tradeProfit">$100</strong></div>
+              <div><span>Gross margin</span><strong id="tradeMargin">36%</strong></div>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head"><div><h3>Rules that protect the account</h3><small>Keep these consistent.</small></div></div>
+            <ul class="trade-rules">
+              <li>One-vehicle trial before committing to recurring volume.</li>
+              <li>Partner supplies keys, vehicle location, stock/RO number and approved service level.</li>
+              <li>Condition photos at intake when damage or heavy soil is present.</li>
+              <li>Redo requests must be reported within 24 hours of delivery.</li>
+              <li>No work beyond the approved scope without written/text approval.</li>
+              <li>Partner controls their retail price and customer communication.</li>
+              <li>Never promise same-day volume until capacity is confirmed.</li>
+            </ul>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-head"><div><h3>Fast outreach scripts</h3><small>Ask for the used-car/recon manager, service manager, body-shop manager, or owner.</small></div></div>
+          <div class="trade-script-grid">
+            <div><h4>Dealer / Used Lot</h4><p id="dealerTradeScript">Hi, I’m Joshua with Hustle & Shine Detailing. I handle mobile recon overflow for local vehicle businesses. I’m not trying to replace your detail department — I’m looking to be the call you make when inventory stacks up or you need a vehicle frontline-ready fast. I’ll do one vehicle at wholesale as a trial. Who handles recon or used-car operations?</p><button class="btn trade-copy" data-copy-target="dealerTradeScript" type="button">Copy pitch</button></div>
+            <div><h4>Body Shop</h4><p id="bodyTradeScript">Hi, I’m Joshua with Hustle & Shine. I offer white-label final cleanup for collision shops — repair dust, interior cleanup, glass and exterior presentation before customer delivery. Your customer stays your customer. I can start with one vehicle so you can judge the work before setting up anything recurring. Who handles final delivery or vendor relationships?</p><button class="btn trade-copy" data-copy-target="bodyTradeScript" type="button">Copy pitch</button></div>
+          </div>
+        </article>
+      </section>
     </main>
   </div>
 
@@ -179,5 +250,6 @@
   <script src="./photo-upload-tools.js"></script>
   <script src="./sales-tools.js"></script>
   <script src="./lead-tools.js"></script>
+  <script src="./trade-partner-tools.js"></script>
 </body>
 </html>

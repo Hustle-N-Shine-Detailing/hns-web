@@ -44,18 +44,18 @@ else {
   }
 }
 
-for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html')]) {
+for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html'), join(root, 'trade-partners/index.html')]) {
   const html = readFileSync(htmlFile, 'utf8');
   const refs = [...html.matchAll(/(?:src|href)=["']([^"'#?]+)(?:\?[^"']*)?["']/g)].map(match => match[1]);
   for (const ref of refs) {
-    if (/^(?:https?:|mailto:|tel:|data:|\/\/)/.test(ref)) continue;
+    if (/^(?:https?:|mailto:|tel:|sms:|data:|\/\/)/.test(ref)) continue;
     const local = resolve(join(htmlFile, '..'), ref);
     if (!existsSync(local)) failures.push(`${htmlFile}: missing local asset ${ref}`);
   }
 }
 
 const ops = readFileSync(join(root, 'ops/index.html'), 'utf8');
-for (const required of ['appNotice', 'refreshApp', 'lead-tools.js', 'manifest.webmanifest']) {
+for (const required of ['appNotice', 'refreshApp', 'lead-tools.js', 'manifest.webmanifest', 'Trade Partners', 'trade-partner-tools.js']) {
   if (!ops.includes(required)) failures.push(`ops/index.html is missing ${required}`);
 }
 
@@ -83,3 +83,8 @@ if (failures.length) {
 }
 
 console.log('Smoke checks passed: scripts parse, local assets resolve, Ops controls exist, and booking packages are wired.');
+
+const tradePage = readFileSync(join(root, 'trade-partners/index.html'), 'utf8');
+for (const required of ['Your brand.', 'Request wholesale rate card', 'Your customer stays yours', 'Set up a trial vehicle']) {
+  if (!tradePage.includes(required)) failures.push(`Trade Partner page is missing ${required}`);
+}
