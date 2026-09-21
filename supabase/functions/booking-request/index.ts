@@ -1,7 +1,7 @@
 const allowedOrigins = new Set(['https://hustlenshine.pro', 'https://www.hustlenshine.pro']);
 const publicKey = 'sb_publishable_4JQI3mjlyxVIgLbjx1hvhw_iiFIZIwq';
 const businessId = '612c314d-962e-4119-adc4-ac9c16216053';
-const analyticsEvents = new Set(['page_view','booking_open','calendar_click','payment_click','call_click','text_click']);
+const analyticsEvents = new Set(['page_view','booking_open','vehicle_selected','service_selected','request_submit','request_saved','calendar_click','payment_click','call_click','text_click']);
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function hex(bytes: ArrayBuffer) {

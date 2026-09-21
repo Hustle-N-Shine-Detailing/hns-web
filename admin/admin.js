@@ -21,7 +21,7 @@
   function showTraffic(){
     const views=events.filter(event=>event.event_name==='page_view');
     $('count-views').textContent=views.length;$('count-visitors').textContent=new Set(views.map(event=>event.visitor_hash)).size;
-    $('count-booking-opens').textContent=events.filter(event=>event.event_name==='booking_open').length;
+    $('count-booking-opens').textContent=events.filter(event=>event.event_name==='booking_open').length;$('count-vehicle-selected').textContent=events.filter(event=>event.event_name==='vehicle_selected').length;$('count-service-selected').textContent=events.filter(event=>event.event_name==='service_selected').length;$('count-request-submit').textContent=events.filter(event=>event.event_name==='request_submit').length;$('count-request-saved').textContent=events.filter(event=>event.event_name==='request_saved').length;
     $('count-contact-clicks').textContent=events.filter(event=>event.event_name==='call_click'||event.event_name==='text_click').length;
     $('count-calendar-clicks').textContent=events.filter(event=>event.event_name==='calendar_click').length;
     $('count-payment-clicks').textContent=events.filter(event=>event.event_name==='payment_click').length;
