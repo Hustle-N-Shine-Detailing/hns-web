@@ -1,0 +1,133 @@
+name: Encrypted Supabase backup
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 10 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      BACKUP_ENCRYPTION_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
+      SUPABASE_PROJECT_REF: eratuoffduqjywqlljwc
+      SUPABASE_CLI_VERSION: 2.117.0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Check backup secrets
+        id: guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${SUPABASE_DB_URL}" || -z "${BACKUP_ENCRYPTION_PASSWORD}" ]]; then
+            echo "::warning::Backup skipped. Configure SUPABASE_DB_URL and BACKUP_ENCRYPTION_PASSWORD repository secrets."
+            echo "ready=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          echo "ready=true" >> "${GITHUB_OUTPUT}"
+
+      - name: Use Node
+        if: steps.guard.outputs.ready == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Verify pinned Supabase CLI
+        if: steps.guard.outputs.ready == 'true'
+        shell: bash
+        run: npx --yes "supabase@${SUPABASE_CLI_VERSION}" --version
+
+      - name: Create database backup
+        if: steps.guard.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p backup/database backup/storage
+
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db dump             --db-url "${SUPABASE_DB_URL}"             -f backup/database/roles.sql             --role-only
+
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db dump             --db-url "${SUPABASE_DB_URL}"             -f backup/database/schema.sql
+
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db dump             --db-url "${SUPABASE_DB_URL}"             -f backup/database/data.sql             --data-only             --use-copy             -x "storage.buckets_vectors"             -x "storage.vector_indexes"
+
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db dump             --db-url "${SUPABASE_DB_URL}"             -f backup/database/history_schema.sql             --schema supabase_migrations
+
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" db dump             --db-url "${SUPABASE_DB_URL}"             -f backup/database/history_data.sql             --schema supabase_migrations             --data-only             --use-copy
+
+          test -s backup/database/schema.sql
+          test -s backup/database/data.sql
+
+      - name: Back up private job photos
+        if: steps.guard.outputs.ready == 'true' && env.SUPABASE_ACCESS_TOKEN != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes "supabase@${SUPABASE_CLI_VERSION}" link             --project-ref "${SUPABASE_PROJECT_REF}"
+
+          if npx --yes "supabase@${SUPABASE_CLI_VERSION}" storage ls             ss:///job-photos             --recursive             --experimental             --linked >/tmp/job-photo-list.txt 2>/tmp/job-photo-list.err; then
+            if [[ -s /tmp/job-photo-list.txt ]]; then
+              npx --yes "supabase@${SUPABASE_CLI_VERSION}" storage cp                 ss:///job-photos                 backup/storage/job-photos                 --recursive                 --experimental                 --linked
+              echo "included" > backup/storage-status.txt
+            else
+              echo "bucket-empty" > backup/storage-status.txt
+            fi
+          else
+            echo "storage-copy-unavailable" > backup/storage-status.txt
+            cat /tmp/job-photo-list.err >&2 || true
+          fi
+
+      - name: Record storage backup status
+        if: steps.guard.outputs.ready == 'true' && env.SUPABASE_ACCESS_TOKEN == ''
+        shell: bash
+        run: |
+          echo "skipped-missing-SUPABASE_ACCESS_TOKEN" > backup/storage-status.txt
+
+      - name: Build encrypted archive
+        if: steps.guard.outputs.ready == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          stamp="$(date -u +'%Y%m%dT%H%M%SZ')"
+          archive="hns-supabase-backup-${stamp}.tar.gz"
+          encrypted="${archive}.enc"
+
+          {
+            echo "created_utc=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo "repository=${GITHUB_REPOSITORY}"
+            echo "commit=${GITHUB_SHA}"
+            echo "project_ref=${SUPABASE_PROJECT_REF}"
+            echo "supabase_cli=${SUPABASE_CLI_VERSION}"
+            echo "storage_status=$(cat backup/storage-status.txt 2>/dev/null || echo unknown)"
+          } > backup/manifest.txt
+
+          find backup -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > /tmp/SHA256SUMS\n          mv /tmp/SHA256SUMS backup/SHA256SUMS
+          tar -czf "${archive}" backup
+
+          openssl enc -aes-256-cbc             -salt             -pbkdf2             -iter 600000             -md sha256             -in "${archive}"             -out "${encrypted}"             -pass env:BACKUP_ENCRYPTION_PASSWORD
+
+          sha256sum "${encrypted}" > "${encrypted}.sha256"
+          rm -rf backup "${archive}"
+
+          echo "encrypted_file=${encrypted}" >> "${GITHUB_ENV}"
+          echo "checksum_file=${encrypted}.sha256" >> "${GITHUB_ENV}"
+
+      - name: Upload encrypted backup
+        if: steps.guard.outputs.ready == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: hns-supabase-encrypted-backup-${{ github.run_id }}
+          path: |
+            ${{ env.encrypted_file }}
+            ${{ env.checksum_file }}
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
