@@ -116,7 +116,20 @@ jobs:
           openssl enc -aes-256-cbc             -salt             -pbkdf2             -iter 600000             -md sha256             -in "${archive}"             -out "${encrypted}"             -pass env:BACKUP_ENCRYPTION_PASSWORD
 
           sha256sum "${encrypted}" > "${encrypted}.sha256"
-          rm -rf backup "${archive}"
+
+          verify_dir="$(mktemp -d)"
+          openssl enc -d -aes-256-cbc \
+            -pbkdf2 \
+            -iter 600000 \
+            -md sha256 \
+            -in "${encrypted}" \
+            -out "${verify_dir}/backup.tar.gz" \
+            -pass env:BACKUP_ENCRYPTION_PASSWORD
+          tar -xzf "${verify_dir}/backup.tar.gz" -C "${verify_dir}"
+          (cd "${verify_dir}/backup" && sha256sum -c SHA256SUMS)
+          test -s "${verify_dir}/backup/database/schema.sql"
+          test -s "${verify_dir}/backup/database/data.sql"
+          rm -rf "${verify_dir}" backup "${archive}"
 
           echo "encrypted_file=${encrypted}" >> "${GITHUB_ENV}"
           echo "checksum_file=${encrypted}.sha256" >> "${GITHUB_ENV}"

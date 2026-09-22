@@ -45,3 +45,4 @@ jobs:
           test -f ops/direct-job-tools.js
           test -f ops/runtime-guards.js
           test -f ops/lead-finder-tools.js
+          test -f ops/campaign-tools.js

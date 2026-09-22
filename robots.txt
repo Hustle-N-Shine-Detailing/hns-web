@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /ops/
+
+Sitemap: https://hustlenshine.pro/sitemap.xml

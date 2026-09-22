@@ -6,7 +6,7 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    .growth-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+    .growth-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px}
     .growth-card{padding:18px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel),#101012);display:grid;gap:6px}
     .growth-card span{font-size:.76rem;color:var(--muted);font-weight:750}.growth-card strong{font-size:1.7rem}
     .growth-columns{display:grid;grid-template-columns:1fr 1fr;gap:14px}.growth-columns>.panel{min-width:0}
@@ -129,8 +129,8 @@
     if (!state.businessId) return;
     const [estimateRes, planRes, followupRes, expenseRes] = await Promise.all([
       db.from('estimates').select('id,customer_id,vehicle_id,status,valid_until,notes,subtotal,tax,total,converted_job_id,created_at,customers(first_name,last_name),vehicles(year,make,model),estimate_items(id,service_id,name,quantity,unit_price,line_total)').eq('business_id', state.businessId).order('created_at', { ascending: false }).limit(200),
-      db.from('maintenance_plans').select('id,customer_id,vehicle_id,service_id,name,frequency_weeks,price,active,next_due_at,last_completed_at,notes,customers(first_name,last_name),vehicles(year,make,model),services(name)').eq('business_id', state.businessId).order('next_due_at', { ascending: true, nullsFirst: false }).limit(200),
-      db.from('followups').select('id,customer_id,prospect_id,job_id,kind,status,due_at,completed_at,note,created_at,customers(first_name,last_name),prospects(company_name),jobs(scheduled_start,vehicles(year,make,model))').eq('business_id', state.businessId).order('due_at', { ascending: true, nullsFirst: false }).limit(300),
+      db.from('maintenance_plans').select('id,customer_id,vehicle_id,service_id,name,frequency_weeks,price,active,next_due_at,last_completed_at,notes,customers(first_name,last_name,phone,email),vehicles(year,make,model),services(name)').eq('business_id', state.businessId).order('next_due_at', { ascending: true, nullsFirst: false }).limit(200),
+      db.from('followups').select('id,customer_id,prospect_id,job_id,estimate_id,kind,status,due_at,completed_at,note,created_at,customers(first_name,last_name,phone,email),prospects(company_name,phone,email),jobs(scheduled_start,vehicles(year,make,model)),estimates(total,status)').eq('business_id', state.businessId).order('due_at', { ascending: true, nullsFirst: false }).limit(300),
       db.from('expenses').select('id,job_id,category,vendor,description,amount,incurred_on,created_at,jobs(id,scheduled_start,total,customers(first_name,last_name),vehicles(year,make,model))').eq('business_id', state.businessId).order('incurred_on', { ascending: false }).limit(300)
     ]);
     for (const result of [estimateRes, planRes, followupRes, expenseRes]) if (result.error) throw result.error;
@@ -158,8 +158,15 @@
     const expenses = state.expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
     const booked = state.jobs.reduce((sum, j) => sum + Number(j.total || 0), 0);
     const margin = booked - expenses;
+    const decidedEstimates = state.estimates.filter(e => e.status !== 'draft');
+    const convertedEstimates = state.estimates.filter(e => Boolean(e.converted_job_id));
+    const estimateConversion = decidedEstimates.length ? Math.round((convertedEstimates.length / decidedEstimates.length) * 100) : 0;
+    const completedJobs = state.jobs.filter(j => j.status === 'completed' && Number(j.total || 0) > 0);
+    const avgTicket = completedJobs.length ? completedJobs.reduce((sum, j) => sum + Number(j.total || 0), 0) / completedJobs.length : 0;
     const cards = [
       ['Open estimate value', money(pipeline)],
+      ['Estimate → job', estimateConversion + '%'],
+      ['Avg completed ticket', money(avgTicket)],
       ['Follow-ups due', String(dueFollowups)],
       ['Active maintenance', String(activePlans)],
       ['Booked margin', money(margin)]
@@ -197,7 +204,12 @@
       const due = plan.next_due_at ? new Date(plan.next_due_at) : null;
       const dueText = due ? `Next ${fmtDate(plan.next_due_at)}` : 'Next visit not set';
       const sub = [customerName(plan.customers), plan.vehicles ? vehicleName(plan.vehicles) : '', plan.services?.name || '', `every ${plan.frequency_weeks} wk`, money(plan.price), dueText].filter(Boolean).join(' • ');
-      ui.planList.appendChild(row(plan.name, sub, plan.active ? 'active' : 'inactive'));
+      const actions = document.createElement('div'); actions.className = 'growth-row-actions';
+      const pill = document.createElement('span'); pill.className = `pill ${plan.active ? 'active' : 'inactive'}`; pill.textContent = plan.active ? 'active' : 'inactive'; actions.appendChild(pill);
+      if (plan.active && due && due.getTime() <= Date.now() + 7 * 86400000 && plan.customers?.phone) {
+        const sms = document.createElement('a'); sms.className = 'btn mini'; sms.href = 'sms:' + plan.customers.phone.replace(/[^+\d]/g,'') + '?&body=' + encodeURIComponent(`Hi ${plan.customers.first_name || ''}, this is Joshua with Hustle & Shine. Your ${plan.name} is coming due. Want me to get your next detail on the calendar?`); sms.textContent = due < new Date() ? 'Text overdue customer' : 'Text due customer'; actions.appendChild(sms);
+      }
+      ui.planList.appendChild(row(plan.name, sub, null, actions));
     });
   }
 
@@ -213,6 +225,21 @@
       const actions = document.createElement('div'); actions.className = 'growth-row-actions';
       const pill = document.createElement('span'); pill.className = `pill ${f.status}`; pill.textContent = f.status; actions.appendChild(pill);
       if (f.status === 'open') {
+        const contact = f.customers || f.prospects || {};
+        const phone = contact.phone || '';
+        const email = contact.email || '';
+        const first = f.customers?.first_name || f.prospects?.company_name || '';
+        let message = `Hi ${first}, this is Joshua with Hustle & Shine Detailing.`;
+        if (f.kind === 'review') message += ' Thanks again for trusting me with your vehicle. If you were happy with the detail, would you mind leaving a Google review? https://share.google/J5GZIexoKMpeSUrB';
+        else if (f.kind === 'rebook') message += ' You are coming up on the right time for another maintenance detail. Want me to get you back on the schedule?';
+        else if (f.estimate_id) message += ' I am checking in on the estimate I sent over. Do you have any questions or want me to reserve a time?';
+        else message += ' Just following up on your detailing needs. How can I help?';
+        if (phone) {
+          const sms = document.createElement('a'); sms.className = 'btn primary mini'; sms.href = 'sms:' + phone.replace(/[^+\d]/g,'') + '?&body=' + encodeURIComponent(message); sms.textContent = 'Text'; actions.appendChild(sms);
+        }
+        if (email) {
+          const mail = document.createElement('a'); mail.className = 'btn mini'; mail.href = 'mailto:' + email + '?subject=' + encodeURIComponent('Hustle & Shine follow-up') + '&body=' + encodeURIComponent(message); mail.textContent = 'Email'; actions.appendChild(mail);
+        }
         const done = document.createElement('button'); done.type = 'button'; done.className = 'btn mini'; done.textContent = 'Done';
         done.addEventListener('click', () => completeFollowup(f.id)); actions.appendChild(done);
       }

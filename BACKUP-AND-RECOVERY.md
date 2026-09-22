@@ -14,7 +14,7 @@ The database portion follows Supabase's documented logical-backup pattern and ca
 
 If the optional Supabase access-token secret is configured, the workflow also attempts to download the private `job-photos` bucket. This matters because database backups contain Storage metadata, not the actual uploaded files.
 
-Nothing from the backup is committed to Git. The only uploaded GitHub Actions artifact is an encrypted archive plus its checksum.
+Nothing from the backup is committed to Git. Before upload, the workflow now decrypts the newly created archive into a temporary directory, verifies every internal SHA-256 checksum, and confirms `schema.sql` and `data.sql` are non-empty. The only uploaded GitHub Actions artifact is the encrypted archive plus its checksum.
 
 ## Required GitHub Actions secrets
 
@@ -121,6 +121,6 @@ For Hustle & Shine, a backup should not be treated as proven until all of these 
 4. The archive decrypts successfully.
 5. `schema.sql` and `data.sql` are non-empty.
 6. Storage status in `manifest.txt` is reviewed.
-7. A periodic restore drill is performed into a non-production project before a real emergency.
+7. Every scheduled run passes the built-in decrypt-and-checksum recovery check.\n8. A full periodic restore drill is performed into a non-production project before a real emergency.
 
 Never test a restore against the live production database.
