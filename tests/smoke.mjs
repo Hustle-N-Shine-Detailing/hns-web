@@ -68,7 +68,7 @@ const booking = readFileSync(join(root, 'assets/site.js'), 'utf8');
 for (const required of ['Cars & Sedans', 'Trucks & SUVs', 'Ceramic Coating', 'Specialty Vehicle Detail']) {
   if (!booking.includes(required)) failures.push(`Booking flow is missing ${required}`);
 }
-for (const required of ["track('page_view')", "track('booking_open')", "track('contact_step_seen'", "track('form_validation_error'", "track('request_error'", "trackHandoff('payment_click')", 'Save request & continue']) {
+for (const required of ["track('page_view')", "track('booking_open')", "track('contact_step_seen'", "track('form_validation_error'", "track('request_error'", "trackHandoff('payment_click')", 'Save my quote & continue']) {
   if (!booking.includes(required)) failures.push(`Traffic or abandoned-booking tracking is missing ${required}`);
 }
 
