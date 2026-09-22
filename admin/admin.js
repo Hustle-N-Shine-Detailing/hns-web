@@ -28,7 +28,7 @@
     $('count-booking-close').textContent=events.filter(event=>event.event_name==='booking_close').length;
     $('count-form-errors').textContent=events.filter(event=>event.event_name==='form_validation_error').length;
     $('count-request-errors').textContent=events.filter(event=>event.event_name==='request_error').length;
-    const responseMinutes=rows.filter(row=>row.first_contacted_at).map(row=>(new Date(row.first_contacted_at)-new Date(row.created_at))/60000).filter(value=>Number.isFinite(value)&&value>=0);
+    const cutoff=Date.now()-7*24*60*60*1000;const recentRows=rows.filter(row=>new Date(row.created_at).getTime()>=cutoff);const responseMinutes=recentRows.filter(row=>row.first_contacted_at).map(row=>(new Date(row.first_contacted_at)-new Date(row.created_at))/60000).filter(value=>Number.isFinite(value)&&value>=0);
     const avg=responseMinutes.length?responseMinutes.reduce((sum,value)=>sum+value,0)/responseMinutes.length:null;
     $('avg-response-time').textContent=avg===null?'—':(avg<60?Math.round(avg)+'m':(avg/60).toFixed(avg<600?1:0)+'h');
     $('count-contact-clicks').textContent=events.filter(event=>event.event_name==='call_click'||event.event_name==='text_click').length;
@@ -36,7 +36,7 @@
     $('count-payment-clicks').textContent=events.filter(event=>event.event_name==='payment_click').length;
     breakdown($('traffic-sources'),views.map(event=>event.utm_source||event.referrer_host||'Direct / unknown'),'No source data yet.');
     breakdown($('traffic-devices'),views.map(event=>event.device_type||'unknown'),'No device data yet.');
-    breakdown($('booking-sources'),rows.map(row=>row.utm_source||row.referrer_host||'Direct / unknown'),'No attributed bookings yet.');
+    breakdown($('booking-sources'),recentRows.map(row=>row.utm_source||row.referrer_host||'Direct / unknown'),'No attributed bookings yet.');
     $('traffic-message').textContent=events.length?'Updated '+new Date().toLocaleTimeString():'No tracked visits yet.';
   }
   function show(){
