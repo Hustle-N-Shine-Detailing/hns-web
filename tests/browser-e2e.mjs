@@ -52,7 +52,7 @@ try {
     await page.getByLabel('Phone number').fill('2085550100');
     await page.getByLabel('City (optional)').fill('Boise');
     await page.getByRole('checkbox', { name: /You may contact me/i }).check();
-    await page.getByRole('button', { name: /Save request & continue/i }).click();
+    await page.getByRole('button', { name: /Save my quote & continue/i }).click();
     await page.getByText(/Request saved./).waitFor();
 
     check(await page.getByRole('link', { name: /Pay \$220 with Stripe/i }).isVisible(), scenario.name + ': payment handoff did not unlock after mocked save');
