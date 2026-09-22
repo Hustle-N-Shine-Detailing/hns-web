@@ -1,7 +1,7 @@
 const allowedOrigins = new Set(['https://hustlenshine.pro', 'https://www.hustlenshine.pro']);
 const publicKey = 'sb_publishable_4JQI3mjlyxVIgLbjx1hvhw_iiFIZIwq';
 const businessId = '612c314d-962e-4119-adc4-ac9c16216053';
-const analyticsEvents = new Set(['page_view','booking_open','vehicle_selected','service_selected','request_submit','request_saved','calendar_click','payment_click','call_click','text_click']);
+const analyticsEvents = new Set(['page_view','booking_open','vehicle_selected','service_selected','contact_step_seen','form_validation_error','request_submit','request_saved','request_error','booking_close','calendar_click','payment_click','call_click','text_click']);
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function hex(bytes: ArrayBuffer) {
@@ -77,7 +77,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if(body.website || body.consent!==true)return reply({error:'Please check the form and consent box.'},400);
-    const limits:Record<string,number>={customer_name:100,phone:30,email:254,city:100,vehicle:80,service:100,customer_notes:2000};
+    const limits:Record<string,number>={customer_name:100,phone:30,email:254,city:100,vehicle:80,service:100,customer_notes:2000,referrer_host:253,utm_source:100,utm_medium:100,utm_campaign:150};
     const data:Record<string,string>={};for(const [k,max] of Object.entries(limits)){if(body[k]!==undefined && typeof body[k]!=='string')return reply({error:'Invalid form field.'},400);data[k]=(body[k]||'').trim();if(data[k].length>max)return reply({error:'A form field is too long.'},400);}
     if(data.customer_name.length<2 || !/^[+\d()\s.-]{7,30}$/.test(data.phone) || data.phone.replace(/\D/g,'').length<7)return reply({error:'Enter your name and a valid phone number.'},400);
     if(data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))return reply({error:'Enter a valid email address.'},400);
