@@ -2,7 +2,8 @@
   const $=id=>document.getElementById(id);
   if(!window.HNSCreateClient){$('login-message').textContent='Sign-in could not load. Please refresh the page.';return;}
   const client=window.HNSCreateClient('https://eratuoffduqjywqlljwc.supabase.co','sb_publishable_4JQI3mjlyxVIgLbjx1hvhw_iiFIZIwq',{auth:{storage:sessionStorage,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
-  const BUSINESS_ID='612c314d-962e-4119-adc4-ac9c16216053';\n  const statuses=['new','contacted','scheduled','completed','closed'];
+  const BUSINESS_ID='612c314d-962e-4119-adc4-ac9c16216053';
+  const statuses=['new','contacted','scheduled','completed','closed'];
   let rows=[],events=[],userId=null,loading=false,trafficLoading=false,offset=0,canLoadMore=false;
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
   function clear(){userId=null;rows=[];events=[];offset=0;$('requests').replaceChildren();$('traffic-sources').replaceChildren();$('traffic-devices').replaceChildren();$('booking-sources').replaceChildren();$('dashboard').hidden=true;$('logout').hidden=true;$('login-panel').hidden=false;$('password').value='';}
