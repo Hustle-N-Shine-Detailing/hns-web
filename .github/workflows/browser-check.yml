@@ -8,6 +8,8 @@ on:
     paths:
       - 'index.html'
       - 'assets/**'
+      - 'admin/**'
+      - 'ops/**'
       - 'trade-partners/**'
       - 'fleet-detailing/**'
       - 'dealer-detailing/**'
