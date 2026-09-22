@@ -39,7 +39,7 @@ const edgeFunction = join(root, 'supabase/functions/booking-request/index.ts');
 if (!existsSync(edgeFunction)) failures.push('The booking-request Edge Function is missing.');
 else {
   const edgeSource = readFileSync(edgeFunction, 'utf8');
-  for (const required of ['Deno.serve', 'business_domains', 'fallbackBusinessId', 'data.business_id=businessId', 'accept_request_attempt', 'accept_site_event', "body.lead_type==='commercial'", "rest/v1/prospects?select=id"]) {
+  for (const required of ['Deno.serve', 'business_domains', 'fallbackBusinessId', 'data.business_id=businessId', 'accept_request_attempt', 'accept_site_event', "body.lead_type==='commercial'", "rest/v1/prospects?select=id", "!/^[+\\d()\\s.-]{7,30}$/.test(phone)", "!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)"]) {
     if (!edgeSource.includes(required)) failures.push(`Edge Function is missing ${required}`);
   }
 }
