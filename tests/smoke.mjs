@@ -76,6 +76,10 @@ const admin = readFileSync(join(root, 'admin/admin.js'), 'utf8');
 for (const required of ['loadTraffic', 'site_events', 'payment_clicked_at', 'calendar_clicked_at', 'BUSINESS_ID', 'business_members']) {
   if (!admin.includes(required)) failures.push(`Admin analytics is missing ${required}`);
 }
+const adminHtml = readFileSync(join(root, 'admin/index.html'), 'utf8');
+for (const required of ['count-booking-conversion', 'count-booking-close', 'count-form-errors', 'count-request-errors', 'avg-response-time']) {
+  if (!adminHtml.includes(`id="${required}"`)) failures.push(`Admin dashboard is missing metric element ${required}`);
+}
 
 const opsApp = readFileSync(join(root, 'ops/app.js'), 'utf8');
 for (const required of [".from('booking_requests')", ".eq('business_id', state.businessId)"]) {
