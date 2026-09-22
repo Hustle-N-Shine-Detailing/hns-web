@@ -44,7 +44,7 @@ else {
   }
 }
 
-for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html'), join(root, 'trade-partners/index.html')]) {
+for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html'), join(root, 'trade-partners/index.html'), join(root, 'fleet-detailing/index.html'), join(root, 'dealer-detailing/index.html'), join(root, 'body-shop-detailing/index.html'), join(root, 'commercial-detailing/index.html')]) {
   const html = readFileSync(htmlFile, 'utf8');
   const refs = [...html.matchAll(/(?:src|href)=["']([^"'#?]+)(?:\?[^"']*)?["']/g)].map(match => match[1]);
   for (const ref of refs) {
@@ -55,7 +55,7 @@ for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html')
 }
 
 const ops = readFileSync(join(root, 'ops/index.html'), 'utf8');
-for (const required of ['appNotice', 'refreshApp', 'lead-tools.js', 'manifest.webmanifest', 'Trade Partners', 'trade-partner-tools.js']) {
+for (const required of ['appNotice', 'refreshApp', 'lead-tools.js', 'manifest.webmanifest', 'Trade Partners', 'trade-partner-tools.js', 'campaign-tools.js']) {
   if (!ops.includes(required)) failures.push(`ops/index.html is missing ${required}`);
 }
 
@@ -68,7 +68,7 @@ const booking = readFileSync(join(root, 'assets/site.js'), 'utf8');
 for (const required of ['Cars & Sedans', 'Trucks & SUVs', 'Ceramic Coating', 'Specialty Vehicle Detail']) {
   if (!booking.includes(required)) failures.push(`Booking flow is missing ${required}`);
 }
-for (const required of ["track('page_view')", "track('booking_open')", "trackHandoff('payment_click')", 'Save request & continue']) {
+for (const required of ["track('page_view')", "track('booking_open')", "track('contact_step_seen'", "track('form_validation_error'", "track('request_error'", "trackHandoff('payment_click')", 'Save request & continue']) {
   if (!booking.includes(required)) failures.push(`Traffic or abandoned-booking tracking is missing ${required}`);
 }
 
@@ -77,14 +77,18 @@ for (const required of ['loadTraffic', 'site_events', 'payment_clicked_at', 'cal
   if (!admin.includes(required)) failures.push(`Admin analytics is missing ${required}`);
 }
 
+const tradePage = readFileSync(join(root, 'trade-partners/index.html'), 'utf8');
+for (const required of ['Your brand.', 'Request wholesale rate card', 'Your customer stays yours', 'Set up a trial vehicle', 'index,follow']) {
+  if (!tradePage.includes(required)) failures.push(`Trade Partner page is missing ${required}`);
+}
+
+for (const file of ['robots.txt', 'sitemap.xml', 'ops/campaign-tools.js', 'assets/local-landing.css']) {
+  if (!existsSync(join(root, file))) failures.push(`Required growth file is missing: ${file}`);
+}
+
 if (failures.length) {
   console.error(failures.join('\n'));
   process.exit(1);
 }
 
-console.log('Smoke checks passed: scripts parse, local assets resolve, Ops controls exist, and booking packages are wired.');
-
-const tradePage = readFileSync(join(root, 'trade-partners/index.html'), 'utf8');
-for (const required of ['Your brand.', 'Request wholesale rate card', 'Your customer stays yours', 'Set up a trial vehicle']) {
-  if (!tradePage.includes(required)) failures.push(`Trade Partner page is missing ${required}`);
-}
+console.log('Smoke checks passed: scripts parse, local assets resolve, booking instrumentation is wired, and commercial/Trade Partner pages are covered.');
