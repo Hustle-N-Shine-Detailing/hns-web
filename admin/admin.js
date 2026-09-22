@@ -2,13 +2,14 @@
   const $=id=>document.getElementById(id);
   if(!window.HNSCreateClient){$('login-message').textContent='Sign-in could not load. Please refresh the page.';return;}
   const client=window.HNSCreateClient('https://eratuoffduqjywqlljwc.supabase.co','sb_publishable_4JQI3mjlyxVIgLbjx1hvhw_iiFIZIwq',{auth:{storage:sessionStorage,persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+  const BUSINESS_ID='612c314d-962e-4119-adc4-ac9c16216053';
   const statuses=['new','contacted','scheduled','completed','closed'];
   let rows=[],events=[],userId=null,loading=false,trafficLoading=false,offset=0,canLoadMore=false;
   const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
   function clear(){userId=null;rows=[];events=[];offset=0;$('requests').replaceChildren();$('traffic-sources').replaceChildren();$('traffic-devices').replaceChildren();$('booking-sources').replaceChildren();$('dashboard').hidden=true;$('logout').hidden=true;$('login-panel').hidden=false;$('password').value='';}
   async function authorize(session){
     if(!session){clear();return;}
-    const {data,error}=await client.from('admin_members').select('user_id').eq('user_id',session.user.id).maybeSingle();
+    const {data,error}=await client.from('business_members').select('business_id,role').eq('business_id',BUSINESS_ID).eq('user_id',session.user.id).in('role',['owner','manager']).maybeSingle();
     if(error||!data){clear();$('login-message').textContent='This account does not have owner access. Contact the site administrator to activate it.';await client.auth.signOut();return;}
     userId=session.user.id;$('login-panel').hidden=true;$('dashboard').hidden=false;$('logout').hidden=false;await Promise.all([load(false),loadTraffic()]);
   }
@@ -53,21 +54,21 @@
       if(row.customer_notes){card.append(el('p','Customer note: '+row.customer_notes,'customer-note'));}
       const form=el('form'),fields=el('div',undefined,'edit-fields'),statusLabel=el('label','Follow-up status'),select=el('select');select.setAttribute('aria-label','Status for '+row.customer_name);for(const s of statuses){const o=el('option',s.charAt(0).toUpperCase()+s.slice(1));o.value=s;select.append(o);}select.value=row.status;statusLabel.append(select);
       const notesLabel=el('label','Private notes'),notes=el('textarea');notes.rows=3;notes.maxLength=5000;notes.value=row.admin_notes;notesLabel.append(notes);fields.append(statusLabel,notesLabel);const save=el('button','Save changes','primary');save.type='submit';const message=el('span','','save-message');message.setAttribute('role','status');const actions=el('div',undefined,'save-row');actions.append(save,message);form.append(fields,actions);card.append(form);
-      form.addEventListener('submit',async event=>{event.preventDefault();save.disabled=true;message.textContent='Saving…';try{const {data,error}=await client.from('booking_requests').update({status:select.value,admin_notes:notes.value}).eq('id',row.id).select('id,status,admin_notes,first_contacted_at').single();if(error||!data)throw error||new Error();Object.assign(row,data);top.querySelector('.badge').textContent=row.status;message.textContent='Saved';showTraffic();$('count-new').textContent=rows.filter(r=>r.status==='new').length;$('count-contacted').textContent=rows.filter(r=>r.status==='contacted').length;$('count-scheduled').textContent=rows.filter(r=>r.status==='scheduled').length;}catch{message.textContent='Not saved. Refresh or sign in again, then retry.';}finally{save.disabled=false;}});
+      form.addEventListener('submit',async event=>{event.preventDefault();save.disabled=true;message.textContent='Saving…';try{const {data,error}=await client.from('booking_requests').update({status:select.value,admin_notes:notes.value}).eq('id',row.id).eq('business_id',BUSINESS_ID).select('id,status,admin_notes,first_contacted_at').single();if(error||!data)throw error||new Error();Object.assign(row,data);top.querySelector('.badge').textContent=row.status;message.textContent='Saved';showTraffic();$('count-new').textContent=rows.filter(r=>r.status==='new').length;$('count-contacted').textContent=rows.filter(r=>r.status==='contacted').length;$('count-scheduled').textContent=rows.filter(r=>r.status==='scheduled').length;}catch{message.textContent='Not saved. Refresh or sign in again, then retry.';}finally{save.disabled=false;}});
       $('requests').append(card);
     }
   }
   async function load(more){
     if(loading||!userId)return;loading=true;$('refresh').disabled=true;$('load-more').disabled=true;$('inbox-message').textContent='Loading requests…';
     const next=more?offset:0;
-    try{const {data,error}=await client.from('booking_requests').select('*').order('created_at',{ascending:false}).range(next,next+49);if(error)throw error;if(!userId)return;rows=more?[...rows,...data]:data;offset=next+data.length;canLoadMore=data.length===50;show();$('inbox-message').textContent='Updated '+new Date().toLocaleTimeString();}
+    try{const {data,error}=await client.from('booking_requests').select('*').eq('business_id',BUSINESS_ID).order('created_at',{ascending:false}).range(next,next+49);if(error)throw error;if(!userId)return;rows=more?[...rows,...data]:data;offset=next+data.length;canLoadMore=data.length===50;show();$('inbox-message').textContent='Updated '+new Date().toLocaleTimeString();}
     catch{$('inbox-message').textContent='Could not load requests. Check your connection and try Refresh. Your saved requests have not been changed.';}
     finally{loading=false;$('refresh').disabled=false;$('load-more').disabled=false;}
   }
   async function loadTraffic(){
     if(trafficLoading||!userId)return;trafficLoading=true;$('traffic-message').textContent='Loading traffic…';
     const since=new Date(Date.now()-7*24*60*60*1000).toISOString();
-    try{const {data,error}=await client.from('site_events').select('event_name,occurred_at,visitor_hash,referrer_host,device_type,utm_source,utm_medium,utm_campaign').gte('occurred_at',since).order('occurred_at',{ascending:false}).limit(5000);if(error)throw error;if(!userId)return;events=data||[];showTraffic();}
+    try{const {data,error}=await client.from('site_events').select('event_name,occurred_at,visitor_hash,referrer_host,device_type,utm_source,utm_medium,utm_campaign').eq('business_id',BUSINESS_ID).gte('occurred_at',since).order('occurred_at',{ascending:false}).limit(5000);if(error)throw error;if(!userId)return;events=data||[];showTraffic();}
     catch{$('traffic-message').textContent='Traffic could not load. Booking requests are still available below.';}
     finally{trafficLoading=false;}
   }

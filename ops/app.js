@@ -116,7 +116,7 @@ async function loadMembership() {
 async function loadAll() {
   if (!state.businessId) return;
   const [leads, jobs, customers, vehicles, services, prospects] = await Promise.all([
-    db.from('booking_requests').select('id,created_at,customer_name,phone,email,city,vehicle,service,customer_notes,status,admin_notes,converted_customer_id,converted_at,first_contacted_at,referrer_host,utm_source,utm_medium,utm_campaign').order('created_at', { ascending: false }).limit(100),
+    db.from('booking_requests').select('id,business_id,created_at,customer_name,phone,email,city,vehicle,service,customer_notes,status,admin_notes,converted_customer_id,converted_at,first_contacted_at,referrer_host,utm_source,utm_medium,utm_campaign').eq('business_id', state.businessId).order('created_at', { ascending: false }).limit(100),
     db.from('jobs').select('id,customer_id,vehicle_id,scheduled_start,scheduled_end,status,address,total,internal_notes,customers(first_name,last_name),vehicles(year,make,model,color,plate)').eq('business_id', state.businessId).order('scheduled_start', { ascending: true }).limit(100),
     db.from('customers').select('id,first_name,last_name,phone,email,address,notes,created_at').eq('business_id', state.businessId).order('created_at', { ascending: false }).limit(200),
     db.from('vehicles').select('id,customer_id,year,make,model,color,plate,vin,notes,created_at,customers(first_name,last_name)').eq('business_id', state.businessId).order('created_at', { ascending: false }).limit(300),
@@ -178,7 +178,7 @@ function renderLeads(container, leads) {
     });
     select.addEventListener('change', async () => {
       select.disabled = true;
-      const { error } = await db.from('booking_requests').update({ status: select.value }).eq('id', lead.id);
+      const { error } = await db.from('booking_requests').update({ status: select.value }).eq('id', lead.id).eq('business_id', state.businessId);
       select.disabled = false;
       if (error) return alert(error.message);
       lead.status = select.value;

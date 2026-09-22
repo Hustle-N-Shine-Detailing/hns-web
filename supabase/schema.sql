@@ -8,6 +8,7 @@ create policy "Read own membership" on public.admin_members for select to authen
 
 create table public.booking_requests (
  id uuid primary key default gen_random_uuid(),
+ business_id uuid not null references public.businesses(id) on delete cascade,
  created_at timestamptz not null default now(),
  customer_name text not null check(char_length(customer_name) between 2 and 100),
  phone text not null check(char_length(phone) between 7 and 30),
@@ -31,11 +32,52 @@ alter table public.booking_requests enable row level security;
 revoke all on public.booking_requests from anon, authenticated;
 grant select on public.booking_requests to authenticated;
 grant update(status,admin_notes) on public.booking_requests to authenticated;
-create policy "Admins read requests" on public.booking_requests for select to authenticated using (exists(select 1 from public.admin_members where user_id=(select auth.uid())));
-create policy "Admins update requests" on public.booking_requests for update to authenticated using (exists(select 1 from public.admin_members where user_id=(select auth.uid()))) with check (exists(select 1 from public.admin_members where user_id=(select auth.uid())));
+create policy "Members read business booking requests" on public.booking_requests for select to authenticated using ((select private.is_business_member(booking_requests.business_id)));
+create policy "Members update business booking requests" on public.booking_requests for update to authenticated using ((select private.is_business_member(booking_requests.business_id))) with check ((select private.is_business_member(booking_requests.business_id)));
 create index booking_requests_created on public.booking_requests(created_at desc);
+create index booking_requests_business_created_idx on public.booking_requests(business_id,created_at desc);
 create index booking_requests_payment_click_idx on public.booking_requests(payment_clicked_at desc) where payment_clicked_at is not null;
 create index booking_requests_calendar_click_idx on public.booking_requests(calendar_clicked_at desc) where calendar_clicked_at is not null;
+
+
+-- SaaS tenant routing and subscription metadata.
+alter table public.businesses
+ add column if not exists timezone text not null default 'America/Denver',
+ add column if not exists currency text not null default 'USD',
+ add column if not exists onboarding_state text not null default 'setup';
+
+create table public.business_domains (
+ id uuid primary key default gen_random_uuid(),
+ business_id uuid not null references public.businesses(id) on delete cascade,
+ origin text not null unique check(char_length(origin) between 8 and 300 and origin ~ '^https?://[^/]+$'),
+ active boolean not null default true,
+ created_at timestamptz not null default now()
+);
+alter table public.business_domains enable row level security;
+revoke all on public.business_domains from public,anon,authenticated;
+grant select,insert,update,delete on public.business_domains to authenticated;
+grant all on public.business_domains to service_role;
+create policy "Members read business domains" on public.business_domains for select to authenticated using ((select private.is_business_member(business_domains.business_id)));
+create policy "Managers insert business domains" on public.business_domains for insert to authenticated with check (exists(select 1 from public.business_members bm where bm.business_id=business_domains.business_id and bm.user_id=(select auth.uid()) and bm.role in ('owner','manager')));
+create policy "Managers update business domains" on public.business_domains for update to authenticated using (exists(select 1 from public.business_members bm where bm.business_id=business_domains.business_id and bm.user_id=(select auth.uid()) and bm.role in ('owner','manager'))) with check (exists(select 1 from public.business_members bm where bm.business_id=business_domains.business_id and bm.user_id=(select auth.uid()) and bm.role in ('owner','manager')));
+create policy "Managers delete business domains" on public.business_domains for delete to authenticated using (exists(select 1 from public.business_members bm where bm.business_id=business_domains.business_id and bm.user_id=(select auth.uid()) and bm.role in ('owner','manager')));
+
+create table public.business_subscriptions (
+ business_id uuid primary key references public.businesses(id) on delete cascade,
+ plan text not null default 'trial' check(char_length(plan) between 1 and 50),
+ status text not null default 'trialing' check(status in ('trialing','active','past_due','paused','canceled')),
+ trial_ends_at timestamptz,
+ provider_customer_id text unique,
+ provider_subscription_id text unique,
+ current_period_end timestamptz,
+ created_at timestamptz not null default now(),
+ updated_at timestamptz not null default now()
+);
+alter table public.business_subscriptions enable row level security;
+revoke all on public.business_subscriptions from public,anon,authenticated;
+grant select on public.business_subscriptions to authenticated;
+grant all on public.business_subscriptions to service_role;
+create policy "Members read business subscription" on public.business_subscriptions for select to authenticated using ((select private.is_business_member(business_subscriptions.business_id)));
 
 create table public.request_limits (
  key text primary key,
@@ -113,3 +155,6 @@ begin
 end $$;
 revoke all on function public.accept_site_event(text) from public,anon,authenticated;
 grant execute on function public.accept_site_event(text) to service_role;
+
+-- Tenant backfill, domain seed, subscription seed, and booking conversion hardening are tracked in
+-- supabase/migrations/20260922060000_saas_tenant_foundation.sql.
