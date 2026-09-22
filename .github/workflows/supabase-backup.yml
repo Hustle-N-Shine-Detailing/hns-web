@@ -131,7 +131,7 @@ jobs:
             -out "${verify_dir}/backup.tar.gz" \
             -pass env:BACKUP_ENCRYPTION_PASSWORD
           tar -xzf "${verify_dir}/backup.tar.gz" -C "${verify_dir}"
-          (cd "${verify_dir}/backup" && sha256sum -c SHA256SUMS)
+          (cd "${verify_dir}" && sha256sum -c backup/SHA256SUMS)
           test -s "${verify_dir}/backup/database/schema.sql"
           test -s "${verify_dir}/backup/database/data.sql"
           rm -rf "${verify_dir}" backup "${archive}"
