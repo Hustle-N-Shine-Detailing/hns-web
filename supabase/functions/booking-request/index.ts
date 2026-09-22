@@ -135,8 +135,8 @@ Deno.serve(async (req: Request) => {
       const campaignName=clean(body.utm_campaign,150);
       const referrer=clean(body.referrer_host,253);
       const estimatedVehicles=Number(body.estimated_vehicles||0);
-      if(companyName.length<2 || contactName.length<2 || !/^[+\\d()\\s.-]{7,30}$/.test(phone) || phone.replace(/\\D/g,'').length<7)return reply({error:'Enter your company, name and a valid phone number.'},400);
-      if(email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))return reply({error:'Enter a valid email address.'},400);
+      if(companyName.length<2 || contactName.length<2 || !/^[+\d()\s.-]{7,30}$/.test(phone) || phone.replace(/\D/g,'').length<7)return reply({error:'Enter your company, name and a valid phone number.'},400);
+      if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return reply({error:'Enter a valid email address.'},400);
       if(!Number.isFinite(estimatedVehicles)||estimatedVehicles<0||estimatedVehicles>10000)return reply({error:'Enter a valid vehicle count.'},400);
       const rateKey=await sha256('commercial|'+businessId+'|'+ip);
       const rate=await fetch(url+'/rest/v1/rpc/accept_request_attempt',{method:'POST',headers:dbHeaders,body:JSON.stringify({rate_key:rateKey})});
