@@ -6,7 +6,7 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    .growth-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+    .growth-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:14px}
     .growth-card{padding:18px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--panel),#101012);display:grid;gap:6px}
     .growth-card span{font-size:.76rem;color:var(--muted);font-weight:750}.growth-card strong{font-size:1.7rem}
     .growth-columns{display:grid;grid-template-columns:1fr 1fr;gap:14px}.growth-columns>.panel{min-width:0}
@@ -158,8 +158,15 @@
     const expenses = state.expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
     const booked = state.jobs.reduce((sum, j) => sum + Number(j.total || 0), 0);
     const margin = booked - expenses;
+    const decidedEstimates = state.estimates.filter(e => e.status !== 'draft');
+    const convertedEstimates = state.estimates.filter(e => Boolean(e.converted_job_id));
+    const estimateConversion = decidedEstimates.length ? Math.round((convertedEstimates.length / decidedEstimates.length) * 100) : 0;
+    const completedJobs = state.jobs.filter(j => j.status === 'completed' && Number(j.total || 0) > 0);
+    const avgTicket = completedJobs.length ? completedJobs.reduce((sum, j) => sum + Number(j.total || 0), 0) / completedJobs.length : 0;
     const cards = [
       ['Open estimate value', money(pipeline)],
+      ['Estimate → job', estimateConversion + '%'],
+      ['Avg completed ticket', money(avgTicket)],
       ['Follow-ups due', String(dueFollowups)],
       ['Active maintenance', String(activePlans)],
       ['Booked margin', money(margin)]
