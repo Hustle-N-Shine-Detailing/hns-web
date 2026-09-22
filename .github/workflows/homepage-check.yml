@@ -28,6 +28,9 @@ jobs:
       - name: Run project smoke tests
         run: npm test
 
+      - name: Check public-site performance budgets
+        run: npm run test:performance
+
       - name: Parse Supabase Edge Function
         run: npm run check:edge
 

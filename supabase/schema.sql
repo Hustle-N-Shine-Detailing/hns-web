@@ -20,7 +20,12 @@ create table public.booking_requests (
  admin_notes text not null default '' check(char_length(admin_notes)<=5000),
  tracking_token uuid not null default gen_random_uuid(),
  calendar_clicked_at timestamptz,
- payment_clicked_at timestamptz
+ payment_clicked_at timestamptz,
+ first_contacted_at timestamptz,
+ referrer_host text not null default '' check(char_length(referrer_host)<=253),
+ utm_source text not null default '' check(char_length(utm_source)<=100),
+ utm_medium text not null default '' check(char_length(utm_medium)<=100),
+ utm_campaign text not null default '' check(char_length(utm_campaign)<=150)
 );
 alter table public.booking_requests enable row level security;
 revoke all on public.booking_requests from anon, authenticated;
@@ -67,7 +72,7 @@ create table public.site_events (
  id bigint generated always as identity primary key,
  business_id uuid not null references public.businesses(id) on delete cascade,
  occurred_at timestamptz not null default now(),
- event_name text not null check(event_name in ('page_view','booking_open','calendar_click','payment_click','call_click','text_click')),
+ event_name text not null check(event_name in ('page_view','booking_open','vehicle_selected','service_selected','contact_step_seen','form_validation_error','request_submit','request_saved','request_error','booking_close','calendar_click','payment_click','call_click','text_click')),
  path text not null default '/' check(char_length(path) between 1 and 300),
  visitor_hash text not null check(char_length(visitor_hash)=64),
  referrer_host text not null default '' check(char_length(referrer_host)<=253),
