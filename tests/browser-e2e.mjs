@@ -33,6 +33,12 @@ try {
 
     await page.goto(base + '/?utm_source=e2e&utm_medium=test&utm_campaign=booking_flow', { waitUntil: 'domcontentloaded' });
     check((await page.title()).includes('Hustle & Shine'), scenario.name + ': homepage title missing');
+    const missingAlt = await page.locator('img:not([alt])').count();
+    check(missingAlt === 0, scenario.name + ': ' + missingAlt + ' image(s) are missing alt attributes');
+    const unnamedButtons = await page.locator('button').evaluateAll(buttons => buttons.filter(button => !(button.textContent || '').trim() && !button.getAttribute('aria-label')).length);
+    check(unnamedButtons === 0, scenario.name + ': ' + unnamedButtons + ' button(s) have no accessible name');
+    const unlabeledInputs = await page.locator('input:not([type="hidden"]),textarea,select').evaluateAll(fields => fields.filter(field => !field.closest('label') && !field.getAttribute('aria-label') && !field.getAttribute('aria-labelledby')).length);
+    check(unlabeledInputs === 0, scenario.name + ': ' + unlabeledInputs + ' form field(s) have no accessible label');
     await page.getByRole('button', { name: /Book Now/i }).first().click();
     check(await page.getByRole('heading', { name: /Build your detail/i }).isVisible(), scenario.name + ': booking modal did not open');
 
