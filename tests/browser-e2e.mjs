@@ -80,6 +80,25 @@ try {
     check((await page.locator('link[rel="canonical"]').getAttribute('href') || '').startsWith('https://hustlenshine.pro/'), path + ': canonical URL missing');
   }
   await context.close();
+
+  for (const privateSurface of [
+    { path: '/admin/', name: 'admin' },
+    { path: '/ops/', name: 'ops' }
+  ]) {
+    const privateContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const privatePage = await privateContext.newPage();
+    const privateErrors = [];
+    privatePage.on('pageerror', error => privateErrors.push(error.message));
+    await privatePage.goto(base + privateSurface.path, { waitUntil: 'domcontentloaded' });
+    check((await privatePage.locator('body').innerText()).trim().length > 40, privateSurface.name + ': sign-in page is blank');
+    check(await privatePage.locator('input[type="email"]').count() === 1, privateSurface.name + ': email field missing');
+    check(await privatePage.locator('input[type="password"]').count() === 1, privateSurface.name + ': password field missing');
+    check(await privatePage.locator('button[type="submit"]').count() >= 1, privateSurface.name + ': sign-in button missing');
+    const privateOverflow = await privatePage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    check(privateOverflow <= 2, privateSurface.name + ': mobile sign-in page has horizontal overflow of ' + privateOverflow + 'px');
+    check(privateErrors.length === 0, privateSurface.name + ': browser errors: ' + privateErrors.join(' | '));
+    await privateContext.close();
+  }
 } finally {
   await browser.close();
 }
