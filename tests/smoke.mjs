@@ -39,12 +39,12 @@ const edgeFunction = join(root, 'supabase/functions/booking-request/index.ts');
 if (!existsSync(edgeFunction)) failures.push('The booking-request Edge Function is missing.');
 else {
   const edgeSource = readFileSync(edgeFunction, 'utf8');
-  for (const required of ['Deno.serve', 'business_domains', 'fallbackBusinessId', 'data.business_id=businessId', 'accept_request_attempt', 'accept_site_event']) {
+  for (const required of ['Deno.serve', 'business_domains', 'fallbackBusinessId', 'data.business_id=businessId', 'accept_request_attempt', 'accept_site_event', "body.lead_type==='commercial'", "rest/v1/prospects?select=id"]) {
     if (!edgeSource.includes(required)) failures.push(`Edge Function is missing ${required}`);
   }
 }
 
-for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html'), join(root, 'trade-partners/index.html'), join(root, 'fleet-detailing/index.html'), join(root, 'dealer-detailing/index.html'), join(root, 'body-shop-detailing/index.html'), join(root, 'commercial-detailing/index.html')]) {
+for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html'), join(root, 'trade-partners/index.html'), join(root, 'fleet-detailing/index.html'), join(root, 'dealer-detailing/index.html'), join(root, 'body-shop-detailing/index.html'), join(root, 'commercial-detailing/index.html'), join(root, 'mobile-detailing-meridian-id/index.html'), join(root, 'mobile-detailing-nampa-id/index.html'), join(root, 'mobile-detailing-eagle-id/index.html'), join(root, 'mobile-detailing-kuna-id/index.html'), join(root, 'mobile-detailing-caldwell-id/index.html'), join(root, 'mobile-detailing-star-id/index.html')]) {
   const html = readFileSync(htmlFile, 'utf8');
   const refs = [...html.matchAll(/(?:src|href)=["']([^"'#?]+)(?:\?[^"']*)?["']/g)].map(match => match[1]);
   for (const ref of refs) {
@@ -55,7 +55,7 @@ for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html')
 }
 
 const ops = readFileSync(join(root, 'ops/index.html'), 'utf8');
-for (const required of ['appNotice', 'refreshApp', 'lead-tools.js', 'manifest.webmanifest', 'Trade Partners', 'trade-partner-tools.js', 'campaign-tools.js']) {
+for (const required of ['appNotice', 'refreshApp', 'lead-tools.js', 'manifest.webmanifest', 'Trade Partners', 'trade-partner-tools.js', 'campaign-tools.js', 'revenue-today.js']) {
   if (!ops.includes(required)) failures.push(`ops/index.html is missing ${required}`);
 }
 
@@ -100,8 +100,18 @@ for (const required of ['Your brand.', 'Request wholesale rate card', 'Your cust
   if (!tradePage.includes(required)) failures.push(`Trade Partner page is missing ${required}`);
 }
 
-for (const file of ['robots.txt', 'sitemap.xml', 'ops/campaign-tools.js', 'assets/local-landing.css']) {
+for (const file of ['robots.txt', 'sitemap.xml', 'ops/campaign-tools.js', 'ops/revenue-today.js', 'assets/local-landing.css', 'assets/local-lead.js']) {
   if (!existsSync(join(root, file))) failures.push(`Required growth file is missing: ${file}`);
+}
+
+const campaignTools = readFileSync(join(root, 'ops/campaign-tools.js'), 'utf8');
+for (const required of ['Customer referral links', 'utm_source', 'referral', 'Text link to customer']) {
+  if (!campaignTools.includes(required)) failures.push(`Campaign/referral tools are missing ${required}`);
+}
+
+const revenueToday = readFileSync(join(root, 'ops/revenue-today.js'), 'utf8');
+for (const required of ['Make Money Today', "from('followups')", "from('maintenance_plans')", "from('lead_candidates')", "from('site_events')"]) {
+  if (!revenueToday.includes(required)) failures.push(`Revenue dashboard is missing ${required}`);
 }
 
 if (failures.length) {
