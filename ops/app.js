@@ -116,8 +116,8 @@ async function loadMembership() {
 async function loadAll() {
   if (!state.businessId) return;
   const [leads, jobs, customers, vehicles, services, prospects] = await Promise.all([
-    db.from('booking_requests').select('id,created_at,customer_name,phone,email,city,vehicle,service,customer_notes,status,admin_notes,converted_customer_id,converted_at').order('created_at', { ascending: false }).limit(100),
-    db.from('jobs').select('id,scheduled_start,status,address,total,internal_notes,customers(first_name,last_name),vehicles(year,make,model,color,plate)').eq('business_id', state.businessId).order('scheduled_start', { ascending: true }).limit(100),
+    db.from('booking_requests').select('id,created_at,customer_name,phone,email,city,vehicle,service,customer_notes,status,admin_notes,converted_customer_id,converted_at,first_contacted_at,referrer_host,utm_source,utm_medium,utm_campaign').order('created_at', { ascending: false }).limit(100),
+    db.from('jobs').select('id,customer_id,vehicle_id,scheduled_start,scheduled_end,status,address,total,internal_notes,customers(first_name,last_name),vehicles(year,make,model,color,plate)').eq('business_id', state.businessId).order('scheduled_start', { ascending: true }).limit(100),
     db.from('customers').select('id,first_name,last_name,phone,email,address,notes,created_at').eq('business_id', state.businessId).order('created_at', { ascending: false }).limit(200),
     db.from('vehicles').select('id,customer_id,year,make,model,color,plate,vin,notes,created_at,customers(first_name,last_name)').eq('business_id', state.businessId).order('created_at', { ascending: false }).limit(300),
     db.from('services').select('id,name,description,base_price,duration_minutes,active').eq('business_id', state.businessId).order('name'),
@@ -184,7 +184,7 @@ function renderLeads(container, leads) {
       lead.status = select.value;
       render();
     });
-    const sub = [lead.vehicle, lead.service, lead.city, lead.phone].filter(Boolean).join(' • ');
+    const source = lead.utm_source || lead.referrer_host || ''; const sub = [lead.vehicle, lead.service, lead.city, lead.phone, source ? `Source: ${source}` : ''].filter(Boolean).join(' • ');
     container.appendChild(row(lead.customer_name, sub, null, select));
   });
 }
@@ -407,10 +407,27 @@ els.jobForm.addEventListener('submit', async e => {
   const serviceId = payload.service_id || null;
   delete payload.service_id;
   payload.business_id = state.businessId;
-  payload.scheduled_start = new Date(payload.scheduled_start).toISOString();
+  const requestedStart = new Date(payload.scheduled_start);
+  if (Number.isNaN(requestedStart.getTime())) return alert('Choose a valid job date and time.');
   if (!payload.vehicle_id) delete payload.vehicle_id;
 
   const selectedService = serviceId ? state.services.find(s => s.id === serviceId) : null;
+  const durationMinutes = Math.max(Number(selectedService?.duration_minutes || 120), 30);
+  const requestedEnd = new Date(requestedStart.getTime() + durationMinutes * 60000);
+  if (requestedStart.getHours() < 8 || requestedEnd.getHours() > 18 || (requestedEnd.getHours() === 18 && requestedEnd.getMinutes() > 0)) {
+    return alert('This job would fall outside the normal 8 AM–6 PM service window.');
+  }
+  const bufferMs = 30 * 60000;
+  const conflict = state.jobs.find(job => {
+    if (!job.scheduled_start || ['completed','cancelled','no_show'].includes(job.status)) return false;
+    const existingStart = new Date(job.scheduled_start).getTime() - bufferMs;
+    const existingEnd = new Date(job.scheduled_end || new Date(new Date(job.scheduled_start).getTime() + 2 * 60 * 60000)).getTime() + bufferMs;
+    return requestedStart.getTime() < existingEnd && requestedEnd.getTime() > existingStart;
+  });
+  if (conflict) return alert('That time overlaps another job or the 30-minute mobile travel buffer. Pick a different time.');
+
+  payload.scheduled_start = requestedStart.toISOString();
+  payload.scheduled_end = requestedEnd.toISOString();
   if (selectedService) {
     payload.subtotal = Number(selectedService.base_price || 0);
     payload.total = Number(selectedService.base_price || 0);
