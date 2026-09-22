@@ -91,9 +91,17 @@ try {
     privatePage.on('pageerror', error => privateErrors.push(error.message));
     await privatePage.goto(base + privateSurface.path, { waitUntil: 'domcontentloaded' });
     check((await privatePage.locator('body').innerText()).trim().length > 40, privateSurface.name + ': sign-in page is blank');
-    check(await privatePage.locator('input[type="email"]').count() === 1, privateSurface.name + ': email field missing');
-    check(await privatePage.locator('input[type="password"]').count() === 1, privateSurface.name + ': password field missing');
-    check(await privatePage.locator('button[type="submit"]').count() >= 1, privateSurface.name + ': sign-in button missing');
+    check(await privatePage.locator('#email').count() === 1, privateSurface.name + ': owner email field missing');
+    check(await privatePage.locator('#password').count() === 1, privateSurface.name + ': owner password field missing');
+    const signInButton = privateSurface.name === 'admin' ? '#login-button' : '#authForm button[type="submit"]';
+    check(await privatePage.locator(signInButton).count() === 1, privateSurface.name + ': sign-in button missing');
+    const authSurface = privateSurface.name === 'admin' ? '#login-panel' : '#authView';
+    check(await privatePage.locator(authSurface).isVisible(), privateSurface.name + ': sign-in surface is not visible');
+    if (privateSurface.name === 'admin') {
+      for (const metricId of ['count-booking-conversion','count-booking-close','count-form-errors','count-request-errors','avg-response-time']) {
+        check(await privatePage.locator('#' + metricId).count() === 1, 'admin: missing dashboard metric #' + metricId);
+      }
+    }
     const privateOverflow = await privatePage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     check(privateOverflow <= 2, privateSurface.name + ': mobile sign-in page has horizontal overflow of ' + privateOverflow + 'px');
     check(privateErrors.length === 0, privateSurface.name + ': browser errors: ' + privateErrors.join(' | '));
