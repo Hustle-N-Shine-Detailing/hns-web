@@ -120,6 +120,36 @@ Deno.serve(async (req: Request) => {
       return reply({ok:true});
     }
 
+    if(body.lead_type==='commercial'){
+      if(body.website || body.consent!==true)return reply({error:'Please check the form and consent box.'},400);
+      const clean=(value:unknown,max:number)=>typeof value==='string'?value.trim().slice(0,max):'';
+      const companyName=clean(body.company_name,120);
+      const contactName=clean(body.contact_name,100);
+      const phone=clean(body.phone,30);
+      const email=clean(body.email,254);
+      const city=clean(body.city,100)||'Boise';
+      const category=clean(body.category,100)||'Commercial account';
+      const notes=clean(body.notes,1800);
+      const source=clean(body.utm_source,100);
+      const medium=clean(body.utm_medium,100);
+      const campaignName=clean(body.utm_campaign,150);
+      const referrer=clean(body.referrer_host,253);
+      const estimatedVehicles=Number(body.estimated_vehicles||0);
+      if(companyName.length<2 || contactName.length<2 || !/^[+\\d()\\s.-]{7,30}$/.test(phone) || phone.replace(/\\D/g,'').length<7)return reply({error:'Enter your company, name and a valid phone number.'},400);
+      if(email && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))return reply({error:'Enter a valid email address.'},400);
+      if(!Number.isFinite(estimatedVehicles)||estimatedVehicles<0||estimatedVehicles>10000)return reply({error:'Enter a valid vehicle count.'},400);
+      const rateKey=await sha256('commercial|'+businessId+'|'+ip);
+      const rate=await fetch(url+'/rest/v1/rpc/accept_request_attempt',{method:'POST',headers:dbHeaders,body:JSON.stringify({rate_key:rateKey})});
+      if(!rate.ok)return reply({error:'Unable to receive requests right now. Please call or text (208) 977-1200.'},503);
+      if(await rate.json()!==true)return reply({error:'Too many requests. Please call or text (208) 977-1200.'},429);
+      const attribution=[source&&('source='+source),medium&&('medium='+medium),campaignName&&('campaign='+campaignName),referrer&&('referrer='+referrer)].filter(Boolean).join(' | ');
+      const prospect={business_id:businessId,company_name:companyName,category,contact_name:contactName,phone,email,city,state:'ID',source:'website',stage:'new',estimated_vehicles:Math.round(estimatedVehicles),estimated_monthly_value:0,notes:['Website commercial inquiry.',notes,attribution].filter(Boolean).join(' ')};
+      const saved=await fetch(url+'/rest/v1/prospects?select=id',{method:'POST',headers:{...dbHeaders,Prefer:'return=representation'},body:JSON.stringify(prospect)});
+      if(!saved.ok)return reply({error:'Your request was not saved. Please call or text (208) 977-1200.'},503);
+      const rows=await saved.json();
+      return reply({ok:true,prospect_id:rows[0]?.id},201);
+    }
+
     if(body.website || body.consent!==true)return reply({error:'Please check the form and consent box.'},400);
     const limits:Record<string,number>={customer_name:100,phone:30,email:254,city:100,vehicle:80,service:100,customer_notes:2000,referrer_host:253,utm_source:100,utm_medium:100,utm_campaign:150};
     const data:Record<string,string>={};
