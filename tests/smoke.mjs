@@ -39,7 +39,7 @@ const edgeFunction = join(root, 'supabase/functions/booking-request/index.ts');
 if (!existsSync(edgeFunction)) failures.push('The booking-request Edge Function is missing.');
 else {
   const edgeSource = readFileSync(edgeFunction, 'utf8');
-  for (const required of ['Deno.serve', 'allowedOrigins', 'accept_request_attempt', 'accept_site_event']) {
+  for (const required of ['Deno.serve', 'business_domains', 'fallbackBusinessId', 'data.business_id=businessId', 'accept_request_attempt', 'accept_site_event']) {
     if (!edgeSource.includes(required)) failures.push(`Edge Function is missing ${required}`);
   }
 }
@@ -73,11 +73,11 @@ for (const required of ["track('page_view')", "track('booking_open')", "track('c
 }
 
 const admin = readFileSync(join(root, 'admin/admin.js'), 'utf8');
-for (const required of ['loadTraffic', 'site_events', 'payment_clicked_at', 'calendar_clicked_at']) {
+for (const required of ['loadTraffic', 'site_events', 'payment_clicked_at', 'calendar_clicked_at', 'BUSINESS_ID', 'business_members']) {
   if (!admin.includes(required)) failures.push(`Admin analytics is missing ${required}`);
 }
 
-const tradePage = readFileSync(join(root, 'trade-partners/index.html'), 'utf8');
+const opsApp = readFileSync(join(root, 'ops/app.js'), 'utf8');\nfor (const required of [".from('booking_requests')", ".eq('business_id', state.businessId)"]) {\n  if (!opsApp.includes(required)) failures.push(\`Ops tenant scoping is missing \${required}\`);\n}\n\nconst saasMigrationPath = join(root, 'supabase/migrations/20260922060000_saas_tenant_foundation.sql');\nif (!existsSync(saasMigrationPath)) failures.push('SaaS tenant foundation migration is missing.');\nelse {\n  const saasMigration = readFileSync(saasMigrationPath, 'utf8');\n  for (const required of ['business_domains', 'business_subscriptions', 'booking_requests_business_id_fkey', 'request_row.business_id']) {\n    if (!saasMigration.includes(required)) failures.push(\`SaaS tenant migration is missing \${required}\`);\n  }\n}\n\nconst tradePage = readFileSync(join(root, 'trade-partners/index.html'), 'utf8');
 for (const required of ['Your brand.', 'Request wholesale rate card', 'Your customer stays yours', 'Set up a trial vehicle', 'index,follow']) {
   if (!tradePage.includes(required)) failures.push(`Trade Partner page is missing ${required}`);
 }
