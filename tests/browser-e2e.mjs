@@ -45,15 +45,15 @@ try {
     await page.getByRole('button', { name: /Cars & Sedans/i }).click();
     await page.getByRole('button', { name: /Signature Full Detail/i }).click();
 
-    check(await page.getByRole('heading', { name: /Save your detail request/i }).isVisible(), scenario.name + ': contact step did not load');
+    check(await page.getByRole('heading', { name: /Save this quote/i }).isVisible(), scenario.name + ': contact step did not load');
     check((await page.locator('#sumPrice').textContent())?.trim() === '$220', scenario.name + ': sedan full-detail price was not $220');
 
     await page.getByLabel('Your name').fill('Automated Test');
     await page.getByLabel('Phone number').fill('2085550100');
     await page.getByLabel('City (optional)').fill('Boise');
     await page.getByRole('checkbox', { name: /You may contact me/i }).check();
-    await page.getByRole('button', { name: /Save request & continue/i }).click();
-    await page.getByText(/Request saved./).waitFor();
+    await page.getByRole('button', { name: /Save my quote & continue/i }).click();
+    await page.getByText(/Quote saved./).waitFor();
 
     check(await page.getByRole('link', { name: /Pay \$220 with Stripe/i }).isVisible(), scenario.name + ': payment handoff did not unlock after mocked save');
     check(await page.getByRole('link', { name: /Check availability & book/i }).isVisible(), scenario.name + ': scheduling handoff did not unlock after mocked save');
