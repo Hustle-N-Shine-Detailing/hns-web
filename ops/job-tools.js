@@ -168,7 +168,7 @@
   async function openJob(jobId) {
     activeJobId = jobId;
     const [jobRes, invoiceRes, inspectionRes, photoRes] = await Promise.all([
-      db.from('jobs').select('id,scheduled_start,status,address,total,subtotal,customer_notes,internal_notes,customers(first_name,last_name,phone,email),vehicles(year,make,model,color,plate,vin),job_services(name,quantity,unit_price,line_total)').eq('id', jobId).single(),
+      db.from('jobs').select('id,business_id,customer_id,vehicle_id,scheduled_start,status,address,total,subtotal,customer_notes,internal_notes,customers(first_name,last_name,phone,email),vehicles(year,make,model,color,plate,vin),job_services(name,quantity,unit_price,line_total)').eq('id', jobId).single(),
       db.from('invoices').select('*').eq('job_id', jobId).maybeSingle(),
       db.from('job_inspections').select('*').eq('job_id', jobId).maybeSingle(),
       db.from('job_photos').select('id,storage_path,kind,caption,created_at').eq('job_id', jobId).order('created_at', { ascending: false })
@@ -276,13 +276,36 @@
     alert('Inspection saved.');
   });
 
+  async function queueCompletionFollowups(job) {
+    if (!job?.id || !job?.customer_id) return;
+    const { data: existing, error: existingError } = await db.from('followups')
+      .select('kind')
+      .eq('business_id', state.businessId)
+      .eq('job_id', job.id)
+      .in('kind', ['review', 'rebook']);
+    if (existingError) throw existingError;
+    const kinds = new Set((existing || []).map(item => item.kind));
+    const now = Date.now();
+    const rows = [];
+    if (!kinds.has('review')) rows.push({ business_id: state.businessId, customer_id: job.customer_id, job_id: job.id, kind: 'review', status: 'open', due_at: new Date(now + 24 * 60 * 60 * 1000).toISOString(), note: 'Ask for a Google review after the completed detail.' });
+    if (!kinds.has('rebook')) rows.push({ business_id: state.businessId, customer_id: job.customer_id, job_id: job.id, kind: 'rebook', status: 'open', due_at: new Date(now + 42 * 24 * 60 * 60 * 1000).toISOString(), note: 'Check whether the customer is ready for another maintenance detail.' });
+    if (!rows.length) return;
+    const { error } = await db.from('followups').insert(rows);
+    if (error) throw error;
+  }
+
   extra.status.addEventListener('change', async () => {
     if (!activeJobId) return;
+    const nextStatus = extra.status.value;
     extra.status.disabled = true;
-    const { error } = await db.from('jobs').update({ status: extra.status.value, updated_at: new Date().toISOString() }).eq('id', activeJobId);
+    const { error } = await db.from('jobs').update({ status: nextStatus, updated_at: new Date().toISOString() }).eq('id', activeJobId);
     extra.status.disabled = false;
     if (error) return alert(error.message);
-    if (activeJob) activeJob.status = extra.status.value;
+    if (activeJob) activeJob.status = nextStatus;
+    if (nextStatus === 'completed' && activeJob) {
+      try { await queueCompletionFollowups(activeJob); }
+      catch (followupError) { showAppNotice('Job completed, but the automatic review/rebook follow-ups could not be queued: ' + followupError.message, true); }
+    }
     await loadAll();
   });
 
