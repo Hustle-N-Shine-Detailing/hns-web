@@ -77,7 +77,21 @@ for (const required of ['loadTraffic', 'site_events', 'payment_clicked_at', 'cal
   if (!admin.includes(required)) failures.push(`Admin analytics is missing ${required}`);
 }
 
-const opsApp = readFileSync(join(root, 'ops/app.js'), 'utf8');\nfor (const required of [".from('booking_requests')", ".eq('business_id', state.businessId)"]) {\n  if (!opsApp.includes(required)) failures.push(\`Ops tenant scoping is missing \${required}\`);\n}\n\nconst saasMigrationPath = join(root, 'supabase/migrations/20260922060000_saas_tenant_foundation.sql');\nif (!existsSync(saasMigrationPath)) failures.push('SaaS tenant foundation migration is missing.');\nelse {\n  const saasMigration = readFileSync(saasMigrationPath, 'utf8');\n  for (const required of ['business_domains', 'business_subscriptions', 'booking_requests_business_id_fkey', 'request_row.business_id']) {\n    if (!saasMigration.includes(required)) failures.push(\`SaaS tenant migration is missing \${required}\`);\n  }\n}\n\nconst tradePage = readFileSync(join(root, 'trade-partners/index.html'), 'utf8');
+const opsApp = readFileSync(join(root, 'ops/app.js'), 'utf8');
+for (const required of [".from('booking_requests')", ".eq('business_id', state.businessId)"]) {
+  if (!opsApp.includes(required)) failures.push(`Ops tenant scoping is missing ${required}`);
+}
+
+const saasMigrationPath = join(root, 'supabase/migrations/20260922060000_saas_tenant_foundation.sql');
+if (!existsSync(saasMigrationPath)) failures.push('SaaS tenant foundation migration is missing.');
+else {
+  const saasMigration = readFileSync(saasMigrationPath, 'utf8');
+  for (const required of ['business_domains', 'business_subscriptions', 'booking_requests_business_id_fkey', 'request_row.business_id']) {
+    if (!saasMigration.includes(required)) failures.push(`SaaS tenant migration is missing ${required}`);
+  }
+}
+
+const tradePage = readFileSync(join(root, 'trade-partners/index.html'), 'utf8');
 for (const required of ['Your brand.', 'Request wholesale rate card', 'Your customer stays yours', 'Set up a trial vehicle', 'index,follow']) {
   if (!tradePage.includes(required)) failures.push(`Trade Partner page is missing ${required}`);
 }
