@@ -82,8 +82,29 @@ for (const required of ['count-booking-conversion', 'count-booking-close', 'coun
 }
 
 const opsApp = readFileSync(join(root, 'ops/app.js'), 'utf8');
-for (const required of [".from('booking_requests')", ".eq('business_id', state.businessId)"]) {
-  if (!opsApp.includes(required)) failures.push(`Ops tenant scoping is missing ${required}`);
+for (const required of [".from('booking_requests')", ".eq('business_id', state.businessId)", "db.rpc('create_customer'"]) {
+  if (!opsApp.includes(required)) failures.push(`Ops tenant/write wiring is missing ${required}`);
+}
+
+for (const match of opsApp.matchAll(/\$\('([^']+)'\)/g)) {
+  const id = match[1];
+  if (!ops.includes(`id="${id}"`)) failures.push(`ops/app.js references missing DOM id #${id}`);
+}
+
+const opsJobs = readFileSync(join(root, 'ops/job-tools.js'), 'utf8');
+if (!opsJobs.includes("db.rpc('create_invoice_for_job'")) failures.push('Invoice creation is not using the hardened database RPC.');
+
+for (const localScript of [...ops.matchAll(/<script src="(\.\/[^"?]+\.js)([^"]*)"><\/script>/g)]) {
+  if (!/\?v=/.test(localScript[2])) failures.push(`Ops script is missing a cache-busting version: ${localScript[1]}`);
+}
+
+const opsWriteMigrationPath = join(root, 'supabase/migrations/20260923141000_ops_write_reliability.sql');
+if (!existsSync(opsWriteMigrationPath)) failures.push('Ops write reliability migration is missing.');
+else {
+  const opsWriteMigration = readFileSync(opsWriteMigrationPath, 'utf8');
+  for (const required of ['create_customer', 'create_invoice_for_job', 'auth.uid()', 'business_members']) {
+    if (!opsWriteMigration.includes(required)) failures.push(`Ops write reliability migration is missing ${required}`);
+  }
 }
 
 const saasMigrationPath = join(root, 'supabase/migrations/20260922060000_saas_tenant_foundation.sql');
