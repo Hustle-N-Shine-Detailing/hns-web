@@ -480,7 +480,6 @@ els.jobForm.addEventListener('submit', async e => {
       name: selectedService.name,
       quantity: 1,
       unit_price: price,
-      line_total: price,
     });
     if (serviceError) alert(`Job created, but the service line could not be attached: ${serviceError.message}`);
   }
