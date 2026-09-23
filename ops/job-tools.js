@@ -224,11 +224,18 @@
 
   async function createInvoice() {
     if (!activeJob) return;
-    const amount = Number(activeJob.total || 0);
-    const { error } = await db.from('invoices').insert({ business_id: state.businessId, job_id: activeJob.id, status: 'draft', amount_due: amount, amount_paid: 0 });
-    if (error) return alert(error.message);
+    const { data: invoiceId, error } = await db.rpc('create_invoice_for_job', { p_job_id: activeJob.id });
+    if (error) {
+      showAppNotice(`Invoice could not be created: ${error.message}`, true);
+      return;
+    }
+    if (!invoiceId) {
+      showAppNotice('Invoice could not be created. No invoice ID was returned.', true);
+      return;
+    }
     await loadOpsExtras();
     await openJob(activeJob.id);
+    showAppNotice('Invoice is ready.');
   }
 
   async function markPaid(invoice) {

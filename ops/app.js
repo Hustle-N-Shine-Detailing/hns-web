@@ -360,13 +360,49 @@ els.jobCustomer.addEventListener('change', () => fillJobVehicleSelect(els.jobCus
 
 els.customerForm.addEventListener('submit', async e => {
   e.preventDefault();
-  const payload = Object.fromEntries(new FormData(els.customerForm).entries());
-  payload.business_id = state.businessId;
-  const { error } = await db.from('customers').insert(payload);
-  if (error) return alert(error.message);
-  els.customerForm.reset();
-  els.customerDialog.close();
-  await loadAll();
+  if (!state.businessId) {
+    showAppNotice('Your business session is not ready. Tap Refresh or sign in again.', true);
+    return;
+  }
+
+  const submit = els.customerForm.querySelector('button[type="submit"]');
+  const form = new FormData(els.customerForm);
+  const firstName = String(form.get('first_name') || '').trim();
+  if (!firstName) {
+    showAppNotice('First name is required.', true);
+    return;
+  }
+
+  submit.disabled = true;
+  submit.textContent = 'Saving…';
+  showAppNotice('Saving customer…');
+
+  try {
+    const { data: customerId, error } = await db.rpc('create_customer', {
+      p_business_id: state.businessId,
+      p_first_name: firstName,
+      p_last_name: String(form.get('last_name') || '').trim(),
+      p_phone: String(form.get('phone') || '').trim(),
+      p_email: String(form.get('email') || '').trim(),
+      p_address: String(form.get('address') || '').trim(),
+      p_notes: String(form.get('notes') || '').trim(),
+    });
+    if (error) throw error;
+    if (!customerId) throw new Error('The customer was not saved.');
+
+    els.customerForm.reset();
+    els.customerDialog.close();
+    await loadAll();
+    showView('customers');
+    showAppNotice(`${firstName} was saved to Customers.`);
+  } catch (error) {
+    console.error('Customer save failed.', error);
+    const detail = error?.message || 'Unknown error';
+    showAppNotice(`Customer could not be saved: ${detail}`, true);
+  } finally {
+    submit.disabled = false;
+    submit.textContent = 'Save customer';
+  }
 });
 
 els.vehicleForm.addEventListener('submit', async e => {

@@ -107,6 +107,196 @@ try {
     check(privateErrors.length === 0, privateSurface.name + ': browser errors: ' + privateErrors.join(' | '));
     await privateContext.close();
   }
+
+  // Exercise the authenticated Ops write path with a browser-side Supabase stub.
+  // This catches dead Save buttons, stale DOM wiring, and regressions in the customer/invoice RPC calls.
+  {
+    const opsContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const opsPage = await opsContext.newPage();
+    const opsErrors = [];
+    opsPage.on('pageerror', error => opsErrors.push(error.message));
+    opsPage.on('console', msg => { if (msg.type() === 'error') opsErrors.push(msg.text()); });
+
+    await opsPage.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.102.0/dist/umd/supabase.min.js', async route => {
+      const stub = `
+(() => {
+  const businessId = '612c314d-962e-4119-adc4-ac9c16216053';
+  const ownerId = '2d82675c-fd88-461d-906d-81caa47786d1';
+  const store = {
+    business_members: [{ business_id: businessId, role: 'owner', businesses: { name: 'Hustle & Shine Detailing Co', slug: 'hustle-shine-detailing' } }],
+    booking_requests: [],
+    customers: [{ id: 'c-seed', business_id: businessId, first_name: 'Seed', last_name: 'Customer', phone: '2085550100', email: '', address: 'Boise', notes: '', created_at: '2026-09-23T12:00:00Z' }],
+    vehicles: [{ id: 'v-seed', business_id: businessId, customer_id: 'c-seed', year: 2024, make: 'Chevrolet', model: 'Tahoe', color: 'Black', plate: '', vin: '', notes: '', created_at: '2026-09-23T12:00:00Z', customers: { first_name: 'Seed', last_name: 'Customer' } }],
+    services: [{ id: 's-seed', business_id: businessId, name: 'Full Detail', description: '', base_price: 220, duration_minutes: 120, active: true }],
+    jobs: [{
+      id: 'j-seed', business_id: businessId, customer_id: 'c-seed', vehicle_id: 'v-seed',
+      scheduled_start: '2027-01-15T17:00:00Z', scheduled_end: '2027-01-15T19:00:00Z',
+      status: 'scheduled', address: 'Boise', total: 220, subtotal: 220, tax: 0,
+      internal_notes: '', customer_notes: '',
+      customers: { first_name: 'Seed', last_name: 'Customer', phone: '2085550100', email: '' },
+      vehicles: { year: 2024, make: 'Chevrolet', model: 'Tahoe', color: 'Black', plate: '', vin: '' },
+      job_services: [{ name: 'Full Detail', quantity: 1, unit_price: 220, line_total: 220 }]
+    }],
+    prospects: [],
+    invoices: [],
+    estimates: [],
+    estimate_items: [],
+    maintenance_plans: [],
+    followups: [],
+    lead_candidates: [],
+    site_events: [],
+    service_price_tiers: [],
+    job_inspections: [],
+    job_photos: [],
+    expenses: []
+  };
+  window.__opsRpcCalls = [];
+
+  function rowsFor(table, filters) {
+    let rows = [...(store[table] || [])];
+    for (const [field, value] of filters) rows = rows.filter(row => row?.[field] === value);
+    return rows;
+  }
+
+  function builderFor(table, initialOp = 'select', initialPayload = null) {
+    const state = { op: initialOp, payload: initialPayload, filters: [], limit: null, applied: false };
+
+    function applyWrite() {
+      if (state.applied) return;
+      state.applied = true;
+      if (state.op === 'insert') {
+        const items = Array.isArray(state.payload) ? state.payload : [state.payload];
+        for (const item of items) (store[table] ||= []).push({ id: item.id || crypto.randomUUID(), ...item });
+      } else if (state.op === 'update') {
+        for (const row of rowsFor(table, state.filters)) Object.assign(row, state.payload);
+      } else if (state.op === 'delete') {
+        const doomed = new Set(rowsFor(table, state.filters));
+        store[table] = (store[table] || []).filter(row => !doomed.has(row));
+      } else if (state.op === 'upsert') {
+        const item = state.payload;
+        const existing = (store[table] || []).find(row => item.job_id && row.job_id === item.job_id);
+        if (existing) Object.assign(existing, item); else (store[table] ||= []).push({ id: item.id || crypto.randomUUID(), ...item });
+      }
+    }
+
+    function resultRows() {
+      applyWrite();
+      let rows = rowsFor(table, state.filters);
+      if (state.limit != null) rows = rows.slice(0, state.limit);
+      return rows;
+    }
+
+    const api = {
+      select() { return proxy; },
+      eq(field, value) { state.filters.push([field, value]); return proxy; },
+      neq() { return proxy; },
+      gte() { return proxy; },
+      lte() { return proxy; },
+      gt() { return proxy; },
+      lt() { return proxy; },
+      is() { return proxy; },
+      in() { return proxy; },
+      or() { return proxy; },
+      order() { return proxy; },
+      limit(value) { state.limit = value; return proxy; },
+      abortSignal() { return proxy; },
+      maybeSingle() {
+        const rows = resultRows();
+        return Promise.resolve({ data: rows[0] || null, error: null });
+      },
+      single() {
+        const rows = resultRows();
+        return Promise.resolve({ data: rows[0] || null, error: rows[0] ? null : { message: 'No row' } });
+      },
+      insert(payload) { return builderFor(table, 'insert', payload); },
+      update(payload) { return builderFor(table, 'update', payload); },
+      delete() { return builderFor(table, 'delete', null); },
+      upsert(payload) { return builderFor(table, 'upsert', payload); },
+      then(resolve, reject) { return Promise.resolve({ data: resultRows(), error: null }).then(resolve, reject); }
+    };
+    const proxy = api;
+    return proxy;
+  }
+
+  const db = {
+    auth: {
+      getSession: () => new Promise(resolve => setTimeout(() => resolve({ data: { session: { user: { id: ownerId } } }, error: null }), 0)),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
+      signInWithPassword: async () => ({ data: { session: { user: { id: ownerId } } }, error: null }),
+      signOut: async () => ({ error: null })
+    },
+    from: table => builderFor(table),
+    rpc: async (name, args) => {
+      window.__opsRpcCalls.push({ name, args });
+      if (name === 'create_customer') {
+        const id = 'c-' + (store.customers.length + 1);
+        store.customers.unshift({
+          id,
+          business_id: businessId,
+          first_name: args.p_first_name,
+          last_name: args.p_last_name || '',
+          phone: args.p_phone || '',
+          email: args.p_email || '',
+          address: args.p_address || '',
+          notes: args.p_notes || '',
+          created_at: new Date().toISOString()
+        });
+        return { data: id, error: null };
+      }
+      if (name === 'create_invoice_for_job') {
+        let inv = store.invoices.find(item => item.job_id === args.p_job_id);
+        if (!inv) {
+          inv = {
+            id: 'inv-1', business_id: businessId, job_id: args.p_job_id, invoice_number: 1001, status: 'draft',
+            amount_due: 220, amount_paid: 0, due_at: null, paid_at: null, created_at: new Date().toISOString(),
+            jobs: store.jobs.find(item => item.id === args.p_job_id)
+          };
+          store.invoices.unshift(inv);
+        }
+        return { data: inv.id, error: null };
+      }
+      return { data: null, error: null };
+    },
+    storage: {
+      from: () => ({
+        upload: async () => ({ error: null }),
+        remove: async () => ({ error: null }),
+        createSignedUrl: async () => ({ data: { signedUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==' }, error: null })
+      })
+    }
+  };
+
+  window.supabase = { createClient: () => db };
+})();
+`;
+      await route.fulfill({ status: 200, contentType: 'application/javascript', body: stub });
+    });
+
+    await opsPage.goto(base + '/ops/', { waitUntil: 'domcontentloaded' });
+    await opsPage.locator('#appView').waitFor({ state: 'visible' });
+
+    await opsPage.locator('#newCustomerBtn').click();
+    await opsPage.locator('#customerDialog input[name="first_name"]').fill('Richard');
+    await opsPage.locator('#customerDialog input[name="last_name"]').fill('Bishop');
+    await opsPage.locator('#customerDialog input[name="phone"]').fill('6034936206');
+    await opsPage.locator('#customerDialog input[name="email"]').fill('milordbish@gmail.com');
+    await opsPage.locator('#customerDialog input[name="address"]').fill('Nampa, ID');
+    await opsPage.locator('#customerDialog button[type="submit"]').click();
+    await opsPage.getByText(/Richard was saved to Customers/i).waitFor();
+    check(!(await opsPage.locator('#customerDialog').isVisible()), 'ops authenticated: customer dialog did not close after save');
+
+    await opsPage.locator('[data-view="jobs"]').click();
+    await opsPage.getByRole('button', { name: 'Open job' }).first().click();
+    await opsPage.getByRole('button', { name: 'Create invoice' }).click();
+    await opsPage.getByText(/Invoice is ready/i).waitFor();
+    check(await opsPage.getByText(/Invoice #1001/).count() >= 1, 'ops authenticated: invoice did not render after creation');
+
+    const rpcNames = await opsPage.evaluate(() => window.__opsRpcCalls.map(call => call.name));
+    check(rpcNames.includes('create_customer'), 'ops authenticated: customer RPC was not called');
+    check(rpcNames.includes('create_invoice_for_job'), 'ops authenticated: invoice RPC was not called');
+    check(opsErrors.length === 0, 'ops authenticated: browser errors: ' + opsErrors.join(' | '));
+    await opsContext.close();
+  }
 } finally {
   await browser.close();
 }
