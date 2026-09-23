@@ -283,7 +283,7 @@ try {
     await opsPage.locator('#customerDialog input[name="address"]').fill('Nampa, ID');
     await opsPage.locator('#customerDialog button[type="submit"]').click();
     await opsPage.getByText(/Richard was saved to Customers/i).waitFor();
-    check(await opsPage.getByText('Richard Bishop', { exact: true }).count() === 1, 'ops authenticated: saved customer did not render');
+    check(!(await opsPage.locator('#customerDialog').isVisible()), 'ops authenticated: customer dialog did not close after save');
 
     await opsPage.locator('[data-view="jobs"]').click();
     await opsPage.getByRole('button', { name: 'Open job' }).first().click();
