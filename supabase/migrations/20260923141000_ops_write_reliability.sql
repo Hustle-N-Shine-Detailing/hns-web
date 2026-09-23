@@ -1,34 +1,4 @@
--- Make owner Ops writes reliable and keep invoice creation atomic.
--- This migration is safe for the existing Hustle & Shine tenant and future tenants.
-
-create sequence if not exists public.invoice_number_seq
-  as bigint
-  increment by 1
-  minvalue 1
-  start with 1;
-
-do $$
-declare
-  v_next_base bigint;
-begin
-  select greatest(
-    coalesce((select max(invoice_number) from public.invoices), 0),
-    (select last_value from public.invoice_number_seq)
-  ) into v_next_base;
-
-  if v_next_base <= 1 and not exists (select 1 from public.invoices) then
-    perform setval('public.invoice_number_seq', 1, false);
-  else
-    perform setval('public.invoice_number_seq', greatest(v_next_base, 1), true);
-  end if;
-end $$;
-
-alter sequence public.invoice_number_seq
-  owned by public.invoices.invoice_number;
-
-alter table public.invoices
-  alter column invoice_number
-  set default nextval('public.invoice_number_seq'::regclass);
+-- Make owner Ops writes explicit, tenant-safe, and easy to verify.
 
 create or replace function public.create_customer(
   p_business_id uuid,
