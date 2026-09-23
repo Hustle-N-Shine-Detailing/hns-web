@@ -125,9 +125,9 @@ try {
   const store = {
     business_members: [{ business_id: businessId, role: 'owner', businesses: { name: 'Hustle & Shine Detailing Co', slug: 'hustle-shine-detailing' } }],
     booking_requests: [],
-    customers: [{ id: 'c-seed', first_name: 'Seed', last_name: 'Customer', phone: '2085550100', email: '', address: 'Boise', notes: '', created_at: '2026-09-23T12:00:00Z' }],
-    vehicles: [{ id: 'v-seed', customer_id: 'c-seed', year: 2024, make: 'Chevrolet', model: 'Tahoe', color: 'Black', plate: '', vin: '', notes: '', created_at: '2026-09-23T12:00:00Z', customers: { first_name: 'Seed', last_name: 'Customer' } }],
-    services: [{ id: 's-seed', name: 'Full Detail', description: '', base_price: 220, duration_minutes: 120, active: true }],
+    customers: [{ id: 'c-seed', business_id: businessId, first_name: 'Seed', last_name: 'Customer', phone: '2085550100', email: '', address: 'Boise', notes: '', created_at: '2026-09-23T12:00:00Z' }],
+    vehicles: [{ id: 'v-seed', business_id: businessId, customer_id: 'c-seed', year: 2024, make: 'Chevrolet', model: 'Tahoe', color: 'Black', plate: '', vin: '', notes: '', created_at: '2026-09-23T12:00:00Z', customers: { first_name: 'Seed', last_name: 'Customer' } }],
+    services: [{ id: 's-seed', business_id: businessId, name: 'Full Detail', description: '', base_price: 220, duration_minutes: 120, active: true }],
     jobs: [{
       id: 'j-seed', business_id: businessId, customer_id: 'c-seed', vehicle_id: 'v-seed',
       scheduled_start: '2027-01-15T17:00:00Z', scheduled_end: '2027-01-15T19:00:00Z',
@@ -232,6 +232,7 @@ try {
         const id = 'c-' + (store.customers.length + 1);
         store.customers.unshift({
           id,
+          business_id: businessId,
           first_name: args.p_first_name,
           last_name: args.p_last_name || '',
           phone: args.p_phone || '',
@@ -246,7 +247,7 @@ try {
         let inv = store.invoices.find(item => item.job_id === args.p_job_id);
         if (!inv) {
           inv = {
-            id: 'inv-1', job_id: args.p_job_id, invoice_number: 1001, status: 'draft',
+            id: 'inv-1', business_id: businessId, job_id: args.p_job_id, invoice_number: 1001, status: 'draft',
             amount_due: 220, amount_paid: 0, due_at: null, paid_at: null, created_at: new Date().toISOString(),
             jobs: store.jobs.find(item => item.id === args.p_job_id)
           };
