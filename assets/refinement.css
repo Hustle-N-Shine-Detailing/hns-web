@@ -55,3 +55,8 @@ button.text-link,button.review-link{background:none;border:0;padding:8px 0;curso
 .work-photo a{display:block}.work-photo img{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:contain;background:#101315}
 .work-photo figcaption{padding:14px 16px}.work-photo figcaption strong{display:block;color:#fff}.work-photo figcaption span{display:block;color:#bac1c6;font-size:.875rem;margin-top:4px}
 @media(max-width:760px){.original-gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.work-photo figcaption{padding:10px}.work-photo figcaption strong{font-size:.875rem}.work-photo figcaption span{font-size:.75rem}}
+
+/* Current Google rating and selected customer review excerpts. */
+.refreshed-reviews>.wrap{display:block}.refreshed-reviews .review-head{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px}
+.refreshed-reviews .review-grid{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}.refreshed-reviews .review-card{display:flex;flex-direction:column;padding:22px}.refreshed-reviews .review-card time{font-size:.8rem;color:#60676d;margin-top:5px}.refreshed-reviews .review-link{margin-top:auto}.refreshed-reviews small{font-size:.8rem;color:#60676d}
+@media(max-width:760px){.refreshed-reviews .review-head{display:block}.refreshed-reviews .review-grid{grid-template-columns:1fr}}
