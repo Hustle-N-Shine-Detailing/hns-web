@@ -72,6 +72,8 @@ jobs:
           test -s backup/database/data.sql
 
       - name: Back up private job photos
+        id: photos
+        continue-on-error: true
         if: steps.guard.outputs.ready == 'true' && env.SUPABASE_ACCESS_TOKEN != ''
         shell: bash
         run: |
@@ -88,13 +90,22 @@ jobs:
           else
             echo "storage-copy-unavailable" > backup/storage-status.txt
             cat /tmp/job-photo-list.err >&2 || true
+            exit 1
           fi
 
       - name: Record storage backup status
-        if: steps.guard.outputs.ready == 'true' && env.SUPABASE_ACCESS_TOKEN == ''
+        if: steps.guard.outputs.ready == 'true'
         shell: bash
+        env:
+          PHOTO_BACKUP_OUTCOME: ${{ steps.photos.outcome }}
         run: |
-          echo "skipped-missing-SUPABASE_ACCESS_TOKEN" > backup/storage-status.txt
+          set -euo pipefail
+          if [[ "${PHOTO_BACKUP_OUTCOME}" != "success" ]]; then
+            echo "incomplete-${PHOTO_BACKUP_OUTCOME}" > backup/storage-status.txt
+            echo "::warning::Photo backup incomplete. The database backup will still be encrypted and uploaded. Check SUPABASE_ACCESS_TOKEN."
+          fi
+          cat backup/storage-status.txt
+          echo "storage_status=$(cat backup/storage-status.txt)" >> "${GITHUB_ENV}"
 
       - name: Build encrypted archive
         if: steps.guard.outputs.ready == 'true'
@@ -150,3 +161,11 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           compression-level: 0
+
+      - name: Report incomplete photo backup
+        if: steps.guard.outputs.ready == 'true' && steps.photos.outcome != 'success'
+        shell: bash
+        run: |
+          echo "Database backup encrypted, verified, and uploaded. Photo backup incomplete: ${storage_status}." >> "${GITHUB_STEP_SUMMARY}"
+          echo "::error::Update SUPABASE_ACCESS_TOKEN and rerun this workflow to complete the photo backup."
+          exit 1
