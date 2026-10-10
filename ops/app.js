@@ -1,6 +1,6 @@
 const SUPABASE_URL = 'https://eratuoffduqjywqlljwc.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_4JQI3mjlyxVIgLbjx1hvhw_iiFIZIwq';
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const db = window.HNSCreateClient(SUPABASE_URL, SUPABASE_KEY);
 
 const state = {
   businessId: null,
@@ -43,14 +43,14 @@ function showAppNotice(text = '', isError = false) {
 function fmtDate(value) {
   if (!value) return 'No date';
   try {
-    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(new Date(value));
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: 'America/Denver' }).format(new Date(value));
   } catch {
     return 'No date';
   }
 }
 
 function money(value) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(Number(value || 0));
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(Number(value || 0));
 }
 
 function customerName(customer) {

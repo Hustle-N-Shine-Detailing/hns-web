@@ -132,13 +132,14 @@
     if (error) throw error;
     state.invoices = data || [];
     renderMoney();
-    renderJobs(els.nextJobs, state.jobs.filter(j => !['completed','cancelled'].includes(j.status)).slice(0, 5));
+    renderJobs(els.nextJobs, state.jobs.filter(j => !['completed','cancelled','no_show'].includes(j.status) && j.scheduled_start && new Date(j.scheduled_start) >= new Date(Date.now() - 86400000)).slice(0, 5));
+    document.dispatchEvent(new Event('ops:updated'));
     renderJobs(els.jobsList, state.jobs);
   }
 
   function renderMoney() {
-    const paid = state.invoices.reduce((sum, inv) => sum + Number(inv.amount_paid || 0), 0);
-    const due = state.invoices.reduce((sum, inv) => sum + Math.max(0, Number(inv.amount_due || 0) - Number(inv.amount_paid || 0)), 0);
+    const paid = state.invoices.filter(inv => inv.status !== 'void').reduce((sum, inv) => sum + Number(inv.amount_paid || 0), 0);
+    const due = state.invoices.filter(inv => inv.status !== 'void').reduce((sum, inv) => sum + Math.max(0, Number(inv.amount_due || 0) - Number(inv.amount_paid || 0)), 0);
     const jobValue = state.jobs.reduce((sum, job) => sum + Number(job.total || 0), 0);
     const cards = [
       ['Booked job value', money(jobValue)], ['Collected', money(paid)], ['Outstanding', money(due)], ['Invoices', String(state.invoices.length)]
@@ -168,7 +169,7 @@
   async function openJob(jobId) {
     activeJobId = jobId;
     const [jobRes, invoiceRes, inspectionRes, photoRes] = await Promise.all([
-      db.from('jobs').select('id,business_id,customer_id,vehicle_id,scheduled_start,status,address,total,subtotal,customer_notes,internal_notes,customers(first_name,last_name,phone,email),vehicles(year,make,model,color,plate,vin),job_services(name,quantity,unit_price,line_total)').eq('id', jobId).single(),
+      db.from('jobs').select('id,business_id,customer_id,vehicle_id,scheduled_start,scheduled_end,status,address,total,subtotal,customer_notes,internal_notes,customers(first_name,last_name,phone,email),vehicles(year,make,model,color,plate,vin),job_services(name,quantity,unit_price,line_total)').eq('id', jobId).single(),
       db.from('invoices').select('*').eq('job_id', jobId).maybeSingle(),
       db.from('job_inspections').select('*').eq('job_id', jobId).maybeSingle(),
       db.from('job_photos').select('id,storage_path,kind,caption,created_at').eq('job_id', jobId).order('created_at', { ascending: false })
@@ -181,6 +182,10 @@
     await renderPhotos(photoRes.data || []);
     extra.dialog.showModal();
   }
+
+  document.addEventListener('ops:open-job', event => {
+    if (state.jobs.some(job => job.id === event.detail)) openJob(event.detail).catch(error => showAppNotice(error.message, true));
+  });
 
   function renderJobHeader(job) {
     const customer = customerName(job.customers);
@@ -207,6 +212,8 @@
     if (!invoice) {
       title.textContent = 'No invoice yet'; detail.textContent = `Create an invoice from this job total (${money(activeJob?.total)}).`;
       const create = document.createElement('button'); create.className = 'btn primary'; create.type = 'button'; create.textContent = 'Create invoice';
+      create.disabled = Number(activeJob?.total || 0) <= 0;
+      if (create.disabled) detail.textContent = 'Confirm the job price before creating an invoice.';
       create.addEventListener('click', createInvoice);
       actions.appendChild(create);
     } else {
@@ -217,10 +224,47 @@
       if (invoice.status !== 'paid' && invoice.status !== 'void') {
         const paid = document.createElement('button'); paid.className = 'btn primary'; paid.type = 'button'; paid.textContent = 'Mark paid';
         paid.addEventListener('click', () => markPaid(invoice)); actions.appendChild(paid);
+        const deposit = document.createElement('button'); deposit.type = 'button'; deposit.className = 'btn'; deposit.textContent = 'Record deposit / payment';
+        deposit.addEventListener('click', () => openPayment(invoice)); actions.prepend(deposit);
       }
     }
     copy.append(title, detail); box.append(copy, actions); extra.invoice.appendChild(box);
   }
+
+  const paymentDialog = document.createElement('dialog');
+  paymentDialog.innerHTML = `<form class="modal-card" id="opsPaymentForm"><div class="panel-head"><h3>Record received payment</h3><button type="button" class="icon-btn" aria-label="Close payment">×</button></div><p class="muted" id="opsPaymentBalance"></p><label>Amount received now ($)<input name="amount" type="number" min="0.01" step="0.01" required inputmode="decimal"></label><p class="muted">Only record money you have already received. This does not charge or contact the customer.</p><p role="status" id="opsPaymentMessage"></p><button class="btn primary" type="submit">Save received payment</button></form>`;
+  document.body.appendChild(paymentDialog);
+  paymentDialog.querySelector('.icon-btn').onclick = () => paymentDialog.close();
+  let paymentInvoice;
+  function openPayment(invoice) {
+    paymentInvoice = {...invoice};
+    const form = paymentDialog.querySelector('form'); form.reset();
+    form.elements.amount.max = (Number(invoice.amount_due) - Number(invoice.amount_paid)).toFixed(2);
+    paymentDialog.querySelector('#opsPaymentBalance').textContent = `${money(invoice.amount_paid)} received · ${money(Number(invoice.amount_due) - Number(invoice.amount_paid))} remaining`;
+    paymentDialog.querySelector('#opsPaymentMessage').textContent = '';
+    paymentDialog.showModal();
+  }
+  paymentDialog.querySelector('form').addEventListener('submit', async event => {
+    event.preventDefault();
+    const form = event.currentTarget, button = form.querySelector('[type="submit"]');
+    const message = paymentDialog.querySelector('#opsPaymentMessage');
+    const cents = Math.round(Number(form.elements.amount.value) * 100);
+    const previous = Math.round(Number(paymentInvoice.amount_paid) * 100);
+    const total = Math.round(Number(paymentInvoice.amount_due) * 100);
+    if (!Number.isFinite(cents) || cents <= 0 || previous + cents > total) { message.textContent = 'Enter a payment greater than zero and no larger than the balance.'; return; }
+    button.disabled = true;
+    try {
+      const complete = previous + cents === total;
+      const {data, error} = await db.from('invoices').update({amount_paid: (previous + cents) / 100, status: complete ? 'paid' : 'partial', paid_at: complete ? new Date().toISOString() : null})
+        .eq('id', paymentInvoice.id).eq('business_id', state.businessId).eq('amount_paid', paymentInvoice.amount_paid).eq('status', paymentInvoice.status).eq('amount_due', paymentInvoice.amount_due).select('id').maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error('This invoice changed. Close this window and reopen the job before recording a payment.');
+      paymentDialog.close();
+      await loadOpsExtras(); await openJob(activeJobId);
+      showAppNotice(`Payment recorded: ${money(cents / 100)}. Remaining: ${money((total - previous - cents) / 100)}.`);
+    } catch(error) { message.textContent = error.message; }
+    finally { button.disabled = false; }
+  });
 
   async function createInvoice() {
     if (!activeJob) return;
@@ -240,8 +284,10 @@
 
   async function markPaid(invoice) {
     const amount = Number(invoice.amount_due || 0);
-    const { error } = await db.from('invoices').update({ status: 'paid', amount_paid: amount, paid_at: new Date().toISOString() }).eq('id', invoice.id);
+    if (!confirm(`Confirm you received the remaining ${money(amount - Number(invoice.amount_paid || 0))}?`)) return;
+    const { data, error } = await db.from('invoices').update({ status: 'paid', amount_paid: amount, paid_at: new Date().toISOString() }).eq('id', invoice.id).eq('business_id', state.businessId).eq('amount_paid', invoice.amount_paid).eq('amount_due', invoice.amount_due).eq('status', invoice.status).select('id').maybeSingle();
     if (error) return alert(error.message);
+    if (!data) return alert('Invoice changed. Reopen the job to review the current balance.');
     await loadOpsExtras();
     await openJob(activeJobId);
   }
