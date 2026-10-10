@@ -117,7 +117,7 @@ try {
     opsPage.on('pageerror', error => opsErrors.push(error.message));
     opsPage.on('console', msg => { if (msg.type() === 'error') opsErrors.push(msg.text()); });
 
-    await opsPage.route('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.102.0/dist/umd/supabase.min.js', async route => {
+    await opsPage.route('**/assets/supabase-client.js*', async route => {
       const stub = `
 (() => {
   const businessId = '612c314d-962e-4119-adc4-ac9c16216053';
@@ -151,6 +151,7 @@ try {
     expenses: []
   };
   window.__opsRpcCalls = [];
+  window.__opsStore = store;
 
   function rowsFor(table, filters) {
     let rows = [...(store[table] || [])];
@@ -168,7 +169,8 @@ try {
         const items = Array.isArray(state.payload) ? state.payload : [state.payload];
         for (const item of items) (store[table] ||= []).push({ id: item.id || crypto.randomUUID(), ...item });
       } else if (state.op === 'update') {
-        for (const row of rowsFor(table, state.filters)) Object.assign(row, state.payload);
+        state.updatedRows = rowsFor(table, state.filters);
+        for (const row of state.updatedRows) Object.assign(row, state.payload);
       } else if (state.op === 'delete') {
         const doomed = new Set(rowsFor(table, state.filters));
         store[table] = (store[table] || []).filter(row => !doomed.has(row));
@@ -181,7 +183,7 @@ try {
 
     function resultRows() {
       applyWrite();
-      let rows = rowsFor(table, state.filters);
+      let rows = state.updatedRows || rowsFor(table, state.filters);
       if (state.limit != null) rows = rows.slice(0, state.limit);
       return rows;
     }
@@ -266,7 +268,7 @@ try {
     }
   };
 
-  window.supabase = { createClient: () => db };
+  window.HNSCreateClient = () => db;
 })();
 `;
       await route.fulfill({ status: 200, contentType: 'application/javascript', body: stub });
@@ -290,6 +292,30 @@ try {
     await opsPage.getByRole('button', { name: 'Create invoice' }).click();
     await opsPage.getByText(/Invoice is ready/i).waitFor();
     check(await opsPage.getByText(/Invoice #1001/).count() >= 1, 'ops authenticated: invoice did not render after creation');
+
+    await opsPage.getByRole('button', { name: 'Record deposit / payment' }).click();
+    await opsPage.locator('#opsPaymentForm input[name="amount"]').fill('50');
+    await opsPage.getByRole('button', { name: 'Save received payment' }).click();
+    await opsPage.getByText(/Payment recorded: \$50/).waitFor();
+    check(await opsPage.evaluate(() => window.__opsStore.invoices[0].amount_paid === 50 && window.__opsStore.invoices[0].status === 'partial'), 'ops: deposit did not persist as partial');
+    await opsPage.getByRole('button', { name: 'Record deposit / payment' }).click();
+    await opsPage.locator('#opsPaymentForm input[name="amount"]').fill('10');
+    await opsPage.evaluate(() => { window.__opsStore.invoices[0].amount_paid = 60; });
+    await opsPage.getByRole('button', { name: 'Save received payment' }).click();
+    await opsPage.getByText(/This invoice changed/).waitFor();
+    check(await opsPage.evaluate(() => window.__opsStore.invoices[0].amount_paid === 60), 'ops: stale payment overwrote concurrent change');
+    await opsPage.getByRole('button', { name: 'Close payment' }).click();
+    await opsPage.locator('#jdClose').click();
+    await opsPage.locator('[data-view="dashboard"]').click();
+    await opsPage.locator('#commandSearch').fill('Tahoe');
+    check(await opsPage.locator('#commandResults').getByText('Seed Customer').isVisible(), 'ops: job search missing customer');
+    await opsPage.locator('#commandResults').getByRole('button', { name: 'Edit details' }).click();
+    await opsPage.locator('#commandEditJob input[name="address"]').fill('123 Test Street, Boise');
+    await opsPage.getByRole('button', { name: 'Save job details' }).click();
+    await opsPage.getByText('Job details saved.').waitFor();
+    check(await opsPage.evaluate(() => window.__opsStore.jobs[0].address === '123 Test Street, Boise'), 'ops: address edit did not persist');
+    check(await opsPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), 'ops: mobile command center overflows');
+    await opsPage.screenshot({path:'/tmp/hns-ops-mobile.png',fullPage:true});
 
     const rpcNames = await opsPage.evaluate(() => window.__opsRpcCalls.map(call => call.name));
     check(rpcNames.includes('create_customer'), 'ops authenticated: customer RPC was not called');

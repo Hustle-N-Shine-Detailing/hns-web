@@ -12,7 +12,7 @@
   metricGrid.insertAdjacentElement('afterend',panel);
 
   const metrics=panel.querySelector('#revenueMetrics'),queue=panel.querySelector('#moneyQueue'),funnel=panel.querySelector('#funnelStrip');
-  const safePhone=value=>String(value||'').replace(/[^+\\d]/g,'');
+  const safePhone=value=>String(value||'').replace(/[^+\d]/g,'');
   const sms=(phone,body)=>'sms:'+safePhone(phone)+'?&body='+encodeURIComponent(body);
   const dueNow=value=>!value||new Date(value).getTime()<=Date.now();
 
