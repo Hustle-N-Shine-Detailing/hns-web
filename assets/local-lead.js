@@ -8,7 +8,12 @@
   function send(payload){return fetch(INTAKE_URL,{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true})}
   function track(name){send({event_name:name,path:location.pathname,referrer_host:campaign.referrer_host,utm_source:campaign.utm_source,utm_medium:campaign.utm_medium,utm_campaign:campaign.utm_campaign}).catch(function(){})}
   track('page_view');
-  document.addEventListener('click',function(event){var link=event.target.closest('a[href^="tel:"],a[href^="sms:"]');if(link)track(link.href.indexOf('tel:')===0?'call_click':'text_click')});
+  document.addEventListener('click',function(event){
+    var booking=event.target.closest('a.js-direct-calendly');
+    if(booking)track('calendar_click');
+    var link=event.target.closest('a[href^="tel:"],a[href^="sms:"]');
+    if(link)track(link.href.indexOf('tel:')===0?'call_click':'text_click')
+  });
 
   var types={
     '/fleet-detailing/':{category:'Fleet detailing',headline:'Request a fleet quote',prompt:'Tell me how many vehicles you have and what “clean” needs to look like. I’ll follow up personally.'},
