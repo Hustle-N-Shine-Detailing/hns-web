@@ -42,5 +42,17 @@ function goStep(n){state.step=n;if(n===1){state.vehicle=null;state.pkg=null;stat
 $('back1').addEventListener('click',function(){state.intent=null;goStep(1)});$('back2').addEventListener('click',function(){state.intent=null;state.pkg=null;goStep(2)});$('restart').addEventListener('click',function(){state.intent=null;goStep(1)});renderVehicles();
 var form=$('request-form'),message=$('request-message'),send=$('send-request'),pending=false;
 form.addEventListener('submit',async function(event){event.preventDefault();if(pending)return;if(!form.reportValidity()){track('form_validation_error',{vehicle:$('sumVehicle').textContent,service:$('sumService').textContent});return}track('request_submit',{vehicle:$('sumVehicle').textContent,service:$('sumService').textContent});var data=Object.fromEntries(new FormData(form));data.consent=form.elements.consent.checked;data.vehicle=$('sumVehicle').textContent;data.service=$('sumService').textContent;data.referrer_host=campaign.referrer_host;data.utm_source=campaign.utm_source;data.utm_medium=campaign.utm_medium;data.utm_campaign=campaign.utm_campaign;pending=true;send.disabled=true;send.textContent='Saving…';message.textContent='';message.className='form-message';var controller=new AbortController(),timeout=setTimeout(function(){controller.abort();},20000);try{var response=await fetch(INTAKE_URL,{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify(data),signal:controller.signal});var raw=await response.text(),result={};try{result=raw?JSON.parse(raw):{}}catch(parseError){}if(!response.ok||!result.ok||!result.booking_request_id||!result.tracking_token)throw new Error(result.error||'Unable to save. Please call or text (208) 977-1200.');state.requestId=result.booking_request_id;state.trackingToken=result.tracking_token;track('request_saved',{booking_request_id:state.requestId,tracking_token:state.trackingToken});var p=(PACKAGES[state.vehicle]||[]).find(function(x){return x.key===state.pkg});if(p)renderHandoffActions(p);message.textContent='Quote saved. Book above and pay the $50 deposit in Calendly to reserve your time, or stop here and Joshua can follow up. Saving a quote does not reserve an appointment.';message.className='form-message success';form.reset()}catch(err){track('request_error',{vehicle:$('sumVehicle').textContent,service:$('sumService').textContent});message.textContent=err.name==='AbortError'?'The connection timed out. Your request may have arrived; please call or text (208) 977-1200 to confirm.':(err.message||'Unable to save. Please call or text (208) 977-1200.');message.className='form-message error'}finally{clearTimeout(timeout);pending=false;send.disabled=false;send.textContent='Save my quote & continue';message.focus();}});
+document.querySelectorAll('.js-fast-book').forEach(function(link){
+  try {
+    var url=new URL(link.href);
+    url.searchParams.set('utm_source',campaign.utm_source||'hustlenshine_website');
+    url.searchParams.set('utm_medium',campaign.utm_medium||'direct_booking');
+    url.searchParams.set('utm_campaign',campaign.utm_campaign||'homepage_quick_booking');
+    link.href=url.toString();
+  } catch(e) {}
+  link.addEventListener('click',function(){
+    track('calendar_click',{utm_campaign:campaign.utm_campaign||'homepage_quick_booking'});
+  });
+});
 document.addEventListener('click',function(event){var link=event.target.closest('a[href^="tel:"],a[href^="sms:"]');if(!link)return;track(link.href.indexOf('tel:')===0?'call_click':'text_click');});
 })();
