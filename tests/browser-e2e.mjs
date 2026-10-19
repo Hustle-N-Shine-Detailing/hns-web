@@ -39,6 +39,10 @@ try {
     check(unnamedButtons === 0, scenario.name + ': ' + unnamedButtons + ' button(s) have no accessible name');
     const unlabeledInputs = await page.locator('input:not([type="hidden"]),textarea,select').evaluateAll(fields => fields.filter(field => !field.closest('label') && !field.getAttribute('aria-label') && !field.getAttribute('aria-labelledby')).length);
     check(unlabeledInputs === 0, scenario.name + ': ' + unlabeledInputs + ' form field(s) have no accessible label');
+    await page.evaluate(() => { location.hash = 'book'; });
+    await page.locator('#bookingModal.open').waitFor();
+    check(await page.locator('#bookingModal').getAttribute('aria-hidden') === 'false', scenario.name + ': Google #book link did not open booking');
+    await page.locator('#bookingClose').click();
     await page.getByRole('button', { name: /Book Now/i }).first().click();
     check(await page.getByRole('heading', { name: /Build your detail/i }).isVisible(), scenario.name + ': booking modal did not open');
 
@@ -46,6 +50,7 @@ try {
     await page.getByRole('button', { name: /Signature Full Detail/i }).click();
 
     check(await page.getByRole('heading', { name: /Save this quote/i }).isVisible(), scenario.name + ': contact step did not load');
+    check(new URL(await page.locator('#sumActions a').first().getAttribute('href')).searchParams.get('utm_campaign') === 'booking_flow', scenario.name + ': Calendly lost campaign attribution');
     check((await page.locator('#sumPrice').textContent())?.trim() === '$220', scenario.name + ': sedan full-detail price was not $220');
 
     await page.getByLabel('Your name').fill('Automated Test');

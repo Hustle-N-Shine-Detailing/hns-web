@@ -7,6 +7,11 @@
   var campaign=context();
   function send(payload){return fetch(INTAKE_URL,{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true})}
   function track(name){send({event_name:name,path:location.pathname,referrer_host:campaign.referrer_host,utm_source:campaign.utm_source,utm_medium:campaign.utm_medium,utm_campaign:campaign.utm_campaign}).catch(function(){})}
+  document.querySelectorAll('a.js-direct-calendly').forEach(function(link){
+    var url=new URL(link.href);
+    ['utm_source','utm_medium','utm_campaign'].forEach(function(key){if(campaign[key])url.searchParams.set(key,campaign[key]);});
+    link.href=url.toString();
+  });
   track('page_view');
   document.addEventListener('click',function(event){
     var booking=event.target.closest('a.js-direct-calendly');

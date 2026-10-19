@@ -68,3 +68,5 @@ button.text-link,button.review-link{background:none;border:0;padding:8px 0;curso
 .quick-book-links .btn{min-height:42px;padding:9px 7px;font-size:.8rem;line-height:1.25;text-decoration:none;text-align:center;white-space:normal}
 .quick-book-note{margin:9px 0 0;color:#bbc3c9;font-size:.73rem;line-height:1.45}
 @media(max-width:600px){.quick-book-panel{padding:12px}.quick-book-links{grid-template-columns:1fr}.quick-book-links .btn{min-height:42px}}
+
+.area-links{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}.area-links a{min-height:44px}
