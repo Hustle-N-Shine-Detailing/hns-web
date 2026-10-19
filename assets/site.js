@@ -56,4 +56,7 @@ document.querySelectorAll('.js-fast-book').forEach(function(link){
   });
 });
 document.addEventListener('click',function(event){var link=event.target.closest('a[href^="tel:"],a[href^="sms:"]');if(!link)return;track(link.href.indexOf('tel:')===0?'call_click':'text_click');});
+function openBookingFromHash(){if(location.hash==='#book'&&!modal.classList.contains('open'))openBooking();}
+window.addEventListener('hashchange',openBookingFromHash);
+openBookingFromHash();
 })();
