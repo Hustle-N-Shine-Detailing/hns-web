@@ -44,12 +44,12 @@ else {
   }
 }
 
-for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html'), join(root, 'trade-partners/index.html'), join(root, 'fleet-detailing/index.html'), join(root, 'dealer-detailing/index.html'), join(root, 'body-shop-detailing/index.html'), join(root, 'commercial-detailing/index.html'), join(root, 'mobile-detailing-meridian-id/index.html'), join(root, 'mobile-detailing-nampa-id/index.html'), join(root, 'mobile-detailing-eagle-id/index.html'), join(root, 'mobile-detailing-kuna-id/index.html'), join(root, 'mobile-detailing-caldwell-id/index.html'), join(root, 'mobile-detailing-star-id/index.html')]) {
+for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html'), join(root, 'trade-partners/index.html'), join(root, 'fleet-detailing/index.html'), join(root, 'dealer-detailing/index.html'), join(root, 'body-shop-detailing/index.html'), join(root, 'commercial-detailing/index.html'), join(root, 'mobile-detailing-meridian-id/index.html'), join(root, 'mobile-detailing-nampa-id/index.html'), join(root, 'mobile-detailing-eagle-id/index.html'), join(root, 'mobile-detailing-kuna-id/index.html'), join(root, 'mobile-detailing-caldwell-id/index.html'), join(root, 'mobile-detailing-star-id/index.html'), join(root, 'privacy/index.html')]) {
   const html = readFileSync(htmlFile, 'utf8');
   const refs = [...html.matchAll(/(?:src|href)=["']([^"'#?]+)(?:\?[^"']*)?["']/g)].map(match => match[1]);
   for (const ref of refs) {
     if (/^(?:https?:|mailto:|tel:|sms:|data:|\/\/)/.test(ref)) continue;
-    const local = resolve(join(htmlFile, '..'), ref);
+    const local = ref.startsWith('/') ? resolve(root, ref.slice(1)) : resolve(join(htmlFile, '..'), ref);
     if (!existsSync(local)) failures.push(`${htmlFile}: missing local asset ${ref}`);
   }
 }
