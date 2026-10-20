@@ -65,8 +65,11 @@
     if (banner) { banner.remove(); banner = null; }
   }
 
-  function showPreferences() {
-    if (banner) return;
+  function showPreferences(scrollToBanner) {
+    if (banner) {
+      if (scrollToBanner) banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
     banner = document.createElement('section');
     banner.setAttribute('role', 'region');
     banner.setAttribute('aria-label', 'Optional website analytics');
@@ -99,6 +102,7 @@
     banner.appendChild(detail);
     banner.appendChild(actions);
     document.body.insertBefore(banner, document.body.firstChild);
+    if (scrollToBanner) banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   window.hnsGaEvent = function (name) {
@@ -123,11 +127,11 @@
       settings.type = 'button';
       settings.textContent = 'Analytics privacy settings';
       settings.style.cssText = 'display:inline-block;margin:10px 0;padding:6px 0;border:0;background:transparent;color:inherit;text-decoration:underline;cursor:pointer;font:inherit;';
-      settings.addEventListener('click', showPreferences);
+      settings.addEventListener('click', function () { showPreferences(true); });
       footer.appendChild(settings);
     }
     var manual = document.querySelector('[data-analytics-preferences]');
-    if (manual) manual.addEventListener('click', showPreferences);
-    if (selected === null) showPreferences();
+    if (manual) manual.addEventListener('click', function () { showPreferences(true); });
+    if (selected === null) showPreferences(false);
   });
 })();
