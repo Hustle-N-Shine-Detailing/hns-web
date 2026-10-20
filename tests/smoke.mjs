@@ -64,7 +64,13 @@ for (const required of ['Find Jobs', 'lead_score', 'sales_track', 'Search Idaho 
   if (!finder.includes(required)) failures.push(`Job Finder is missing ${required}`);
 }
 
+const publicBookingPages = ['index.html', 'mobile-detailing-meridian-id/index.html', 'mobile-detailing-nampa-id/index.html', 'mobile-detailing-eagle-id/index.html', 'mobile-detailing-kuna-id/index.html', 'mobile-detailing-caldwell-id/index.html', 'mobile-detailing-star-id/index.html'];
+for (const page of publicBookingPages) {
+  const html = readFileSync(join(root, page), 'utf8');
+  if (/\$50\s+deposit/i.test(html)) failures.push(`${page} still advertises a $50 booking deposit.`);
+}
 const booking = readFileSync(join(root, 'assets/site.js'), 'utf8');
+if (/\$50\s+deposit/i.test(booking)) failures.push('Booking script still advertises a $50 booking deposit.');
 for (const required of ['Cars & Sedans', 'Trucks & SUVs', 'Ceramic Coating', 'Specialty Vehicle Detail']) {
   if (!booking.includes(required)) failures.push(`Booking flow is missing ${required}`);
 }
