@@ -44,12 +44,12 @@ else {
   }
 }
 
-for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html'), join(root, 'trade-partners/index.html'), join(root, 'fleet-detailing/index.html'), join(root, 'dealer-detailing/index.html'), join(root, 'body-shop-detailing/index.html'), join(root, 'commercial-detailing/index.html'), join(root, 'mobile-detailing-meridian-id/index.html'), join(root, 'mobile-detailing-nampa-id/index.html'), join(root, 'mobile-detailing-eagle-id/index.html'), join(root, 'mobile-detailing-kuna-id/index.html'), join(root, 'mobile-detailing-caldwell-id/index.html'), join(root, 'mobile-detailing-star-id/index.html')]) {
+for (const htmlFile of [join(root, 'index.html'), join(root, 'admin/index.html'), join(root, 'ops/index.html'), join(root, 'trade-partners/index.html'), join(root, 'fleet-detailing/index.html'), join(root, 'dealer-detailing/index.html'), join(root, 'body-shop-detailing/index.html'), join(root, 'commercial-detailing/index.html'), join(root, 'mobile-detailing-meridian-id/index.html'), join(root, 'mobile-detailing-nampa-id/index.html'), join(root, 'mobile-detailing-eagle-id/index.html'), join(root, 'mobile-detailing-kuna-id/index.html'), join(root, 'mobile-detailing-caldwell-id/index.html'), join(root, 'mobile-detailing-star-id/index.html'), join(root, 'privacy/index.html')]) {
   const html = readFileSync(htmlFile, 'utf8');
   const refs = [...html.matchAll(/(?:src|href)=["']([^"'#?]+)(?:\?[^"']*)?["']/g)].map(match => match[1]);
   for (const ref of refs) {
     if (/^(?:https?:|mailto:|tel:|sms:|data:|\/\/)/.test(ref)) continue;
-    const local = resolve(join(htmlFile, '..'), ref);
+    const local = ref.startsWith('/') ? resolve(root, ref.slice(1)) : resolve(join(htmlFile, '..'), ref);
     if (!existsSync(local)) failures.push(`${htmlFile}: missing local asset ${ref}`);
   }
 }
@@ -139,6 +139,31 @@ for (const required of ['Customer referral links', 'utm_source', 'referral', 'Te
 const revenueToday = readFileSync(join(root, 'ops/revenue-today.js'), 'utf8');
 for (const required of ['Make Money Today', "from('followups')", "from('maintenance_plans')", "from('lead_candidates')", "from('site_events')"]) {
   if (!revenueToday.includes(required)) failures.push(`Revenue dashboard is missing ${required}`);
+}
+
+
+const ga4PublicPages = [
+  'index.html',
+  'trade-partners/index.html',
+  'fleet-detailing/index.html',
+  'dealer-detailing/index.html',
+  'body-shop-detailing/index.html',
+  'commercial-detailing/index.html',
+  ...['meridian', 'nampa', 'eagle', 'kuna', 'caldwell', 'star'].map(city => `mobile-detailing-${city}-id/index.html`),
+  'privacy/index.html',
+];
+for (const page of ga4PublicPages) {
+  const content = readFileSync(join(root, page), 'utf8');
+  if ((content.match(/\/assets\/analytics\.js\?v=20261020-ga4/g) || []).length !== 1) {
+    failures.push(`${page} is missing the single customer-facing GA4 loader.`);
+  }
+}
+const ga4 = readFileSync(join(root, 'assets/analytics.js'), 'utf8');
+for (const required of ['G-J37P33Q5CD', "selected === 'granted'", 'beginGoogleAnalytics()', "analytics_storage: 'granted'", "analytics_storage: 'denied'", "request_saved: ['generate_lead'"]) {
+  if (!ga4.includes(required)) failures.push(`GA4 consent instrumentation missing: ${required}`);
+}
+for (const path of ['assets/site.js', 'assets/local-lead.js']) {
+  if (!readFileSync(join(root, path), 'utf8').includes('window.hnsGaEvent')) failures.push(`${path} is missing GA4 event handoffs.`);
 }
 
 if (failures.length) {
