@@ -141,6 +141,31 @@ for (const required of ['Make Money Today', "from('followups')", "from('maintena
   if (!revenueToday.includes(required)) failures.push(`Revenue dashboard is missing ${required}`);
 }
 
+
+const ga4PublicPages = [
+  'index.html',
+  'trade-partners/index.html',
+  'fleet-detailing/index.html',
+  'dealer-detailing/index.html',
+  'body-shop-detailing/index.html',
+  'commercial-detailing/index.html',
+  ...['meridian', 'nampa', 'eagle', 'kuna', 'caldwell', 'star'].map(city => `mobile-detailing-${city}-id/index.html`),
+  'privacy/index.html',
+];
+for (const page of ga4PublicPages) {
+  const content = readFileSync(join(root, page), 'utf8');
+  if ((content.match(/\/assets\/analytics\.js\?v=20261020-ga4/g) || []).length !== 1) {
+    failures.push(`${page} is missing the single customer-facing GA4 loader.`);
+  }
+}
+const ga4 = readFileSync(join(root, 'assets/analytics.js'), 'utf8');
+for (const required of ['G-J37P33Q5CD', "selected === 'granted'", 'beginGoogleAnalytics()', "analytics_storage: 'granted'", "analytics_storage: 'denied'", "request_saved: ['generate_lead'"]) {
+  if (!ga4.includes(required)) failures.push(`GA4 consent instrumentation missing: ${required}`);
+}
+for (const path of ['assets/site.js', 'assets/local-lead.js']) {
+  if (!readFileSync(join(root, path), 'utf8').includes('window.hnsGaEvent')) failures.push(`${path} is missing GA4 event handoffs.`);
+}
+
 if (failures.length) {
   console.error(failures.join('\n'));
   process.exit(1);
