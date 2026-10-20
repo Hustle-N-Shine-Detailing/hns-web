@@ -61,8 +61,8 @@ try {
     await page.getByText(/Quote saved./).waitFor();
 
     check(await page.locator('#sumActions a[href*="buy.stripe.com"]').count() === 0, scenario.name + ': booking offers a second full-price checkout');
-    check((await page.locator('#sumNote').textContent()).includes('$50 deposit'), scenario.name + ': deposit terms missing');
-    check(await page.getByRole('link', { name: /Book with a \$50 deposit/i }).isVisible(), scenario.name + ': scheduling handoff did not unlock after mocked save');
+    check((await page.locator('#sumNote').textContent()).includes('No deposit is required'), scenario.name + ': deposit-free terms missing');
+    check(await page.getByRole('link', { name: /Confirm a time — no deposit/i }).isVisible(), scenario.name + ': scheduling handoff did not unlock after mocked save');
 
     if (scenario.name === 'mobile') {
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
