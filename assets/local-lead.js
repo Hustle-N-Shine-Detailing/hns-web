@@ -6,7 +6,7 @@
   function context(){var saved={};try{saved=JSON.parse(sessionStorage.getItem(KEY)||'{}')||{}}catch(e){}var incoming={referrer_host:referrerHost(),utm_source:params.get('utm_source')||'',utm_medium:params.get('utm_medium')||'',utm_campaign:params.get('utm_campaign')||''};var merged={referrer_host:incoming.referrer_host||saved.referrer_host||'',utm_source:incoming.utm_source||saved.utm_source||'',utm_medium:incoming.utm_medium||saved.utm_medium||'',utm_campaign:incoming.utm_campaign||saved.utm_campaign||''};try{sessionStorage.setItem(KEY,JSON.stringify(merged))}catch(e){}return merged}
   var campaign=context();
   function send(payload){return fetch(INTAKE_URL,{method:'POST',headers:{apikey:PUBLIC_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true})}
-  function track(name){send({event_name:name,path:location.pathname,referrer_host:campaign.referrer_host,utm_source:campaign.utm_source,utm_medium:campaign.utm_medium,utm_campaign:campaign.utm_campaign}).catch(function(){})}
+  function track(name){if(window.hnsGaEvent)window.hnsGaEvent(name);send({event_name:name,path:location.pathname,referrer_host:campaign.referrer_host,utm_source:campaign.utm_source,utm_medium:campaign.utm_medium,utm_campaign:campaign.utm_campaign}).catch(function(){})}
   document.querySelectorAll('a.js-direct-calendly').forEach(function(link){
     var url=new URL(link.href);
     ['utm_source','utm_medium','utm_campaign'].forEach(function(key){if(campaign[key])url.searchParams.set(key,campaign[key]);});
