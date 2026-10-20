@@ -70,7 +70,7 @@
     banner = document.createElement('section');
     banner.setAttribute('role', 'region');
     banner.setAttribute('aria-label', 'Optional website analytics');
-    banner.style.cssText = 'position:fixed;z-index:10000;bottom:12px;left:12px;right:12px;max-width:560px;margin:0 auto;padding:15px 18px;border:1px solid #8d9ca9;border-radius:12px;background:#15212b;color:#fff;box-shadow:0 12px 32px #0006;font:15px/1.5 system-ui,sans-serif;';
+    banner.style.cssText = 'box-sizing:border-box;position:relative;z-index:2;width:100%;margin:0;padding:12px 18px;border-bottom:1px solid #8d9ca9;background:#15212b;color:#fff;font:15px/1.5 system-ui,sans-serif;';
     var title = document.createElement('strong');
     title.textContent = 'Optional website analytics';
     var detail = document.createElement('p');
@@ -98,7 +98,7 @@
     banner.appendChild(title);
     banner.appendChild(detail);
     banner.appendChild(actions);
-    document.body.appendChild(banner);
+    document.body.insertBefore(banner, document.body.firstChild);
   }
 
   window.hnsGaEvent = function (name) {
