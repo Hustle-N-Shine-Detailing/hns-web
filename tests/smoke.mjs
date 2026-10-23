@@ -136,6 +136,14 @@ for (const required of ['Customer referral links', 'utm_source', 'referral', 'Te
   if (!campaignTools.includes(required)) failures.push(`Campaign/referral tools are missing ${required}`);
 }
 
+const unifiedOps = readFileSync(join(root, 'ops/unified-shell.js'), 'utf8');
+if (!ops.includes('./unified-shell.js?v=20261023-unified1')) {
+  failures.push('Ops is missing the unified-shell entrypoint.');
+}
+for (const required of ['Win customers', 'Deliver & collect', "['dashboard', 'sales', 'leads']", 'data-unified="money"', 'data-unified="leadFinder"', 'Older builder apps do not automatically sync here']) {
+  if (!unifiedOps.includes(required)) failures.push(`Unified Ops is missing ${required}`);
+}
+
 const revenueToday = readFileSync(join(root, 'ops/revenue-today.js'), 'utf8');
 for (const required of ['Make Money Today', "from('followups')", "from('maintenance_plans')", "from('lead_candidates')", "from('site_events')"]) {
   if (!revenueToday.includes(required)) failures.push(`Revenue dashboard is missing ${required}`);
